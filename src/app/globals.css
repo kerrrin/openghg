@@ -1,26 +1,41 @@
-@import "tailwindcss";
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --green-deep:    #2D5C3F;
+  --green-electric: #C8F135;
+  --black:         #1E1E1E;
+  --magenta:       #B04F9D;
+  --sage:          #D4E0D8;
+  --slate:         #8A9EAA;
+  --lavender:      #C4A0D4;
+  --red:           #E82E57;
+  --white:         #ffffff;
+
+  --font-heading: var(--font-syne);
+  --font-body:    var(--font-dm-sans);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+html {
+  font-family: var(--font-body), sans-serif;
+  color: var(--black);
+  background: var(--white);
+  -webkit-font-smoothing: antialiased;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading), sans-serif;
+  font-weight: 800;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+button {
+  cursor: pointer;
+  font-family: var(--font-body), sans-serif;
+}
+
+input, select, textarea {
+  font-family: var(--font-body), sans-serif;
 }
