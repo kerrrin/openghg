@@ -15,8 +15,11 @@
   --red:           #E82E57;
   --white:         #ffffff;
 
-  --font-heading: var(--font-syne);
-  --font-body:    var(--font-dm-sans);
+  :root {
+  --font-heading:   var(--font-unbounded);
+  --font-body:      var(--font-geist);
+  --font-mono:      var(--font-geist-mono);
+}
 }
 
 html {
@@ -27,15 +30,19 @@ html {
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-heading), sans-serif;
+  font-family: var(--font-unbounded), sans-serif;
   font-weight: 800;
+}
+
+body {
+  font-family: var(--font-geist), sans-serif;
 }
 
 button {
   cursor: pointer;
-  font-family: var(--font-body), sans-serif;
+  font-family: var(--font-geist), sans-serif;
 }
 
 input, select, textarea {
-  font-family: var(--font-body), sans-serif;
+  font-family: var(--font-geist), sans-serif;
 }

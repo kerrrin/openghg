@@ -4,8 +4,8 @@
  */
 
 import type { Metadata } from "next";
-import { Syne, DM_Sans } from "next/font/google";
 import "./globals.css";
+import { Unbounded, Geist, Geist_Mono } from "next/font/google";
 
 // ─────────────────────────────────────────────
 // Page metadata
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     description:
       "Calculate your GHG emissions transparently. All factors visible, all methodology documented.",
     type: "website",
-    url: "https://openghg.org",
+    url: "https://open-ghg.org",
   },
 };
 
@@ -42,17 +42,24 @@ export const metadata: Metadata = {
 // Font configuration
 // ─────────────────────────────────────────────
 
-const syne = Syne({
+const unbounded = Unbounded({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
-  variable: "--font-syne",
+  weight: ["400", "700", "900"],
+  variable: "--font-unbounded",
   display: "swap",
 });
 
-const dmSans = DM_Sans({
+const geist = Geist({
   subsets: ["latin"],
   weight: ["300", "400", "500"],
-  variable: "--font-dm-sans",
+  variable: "--font-geist",
+  display: "swap",
+});
+
+const geistMono = Geist_Mono({
+  subsets: ["latin"],
+  weight: ["300", "400", "500"],
+  variable: "--font-geist-mono",
   display: "swap",
 });
 
@@ -67,7 +74,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${syne.variable} ${dmSans.variable} antialiased`}>
+      <body className={`${unbounded.variable} ${geist.variable} ${geistMono.variable} antialiased`}>
         {children}
       </body>
     </html>
