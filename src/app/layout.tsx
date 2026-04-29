@@ -8,24 +8,6 @@ import { Syne, DM_Sans } from "next/font/google";
 import "./globals.css";
 
 // ─────────────────────────────────────────────
-// Font configuration
-// ─────────────────────────────────────────────
-
-const syne = Syne({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
-  variable: "--font-syne",
-  display: "swap",
-});
-
-const dmSans = DM_Sans({
-  subsets: ["latin"],
-  weight: ["300", "400", "500"],
-  variable: "--font-dm-sans",
-  display: "swap",
-});
-
-// ─────────────────────────────────────────────
 // Page metadata
 // ─────────────────────────────────────────────
 
@@ -43,14 +25,36 @@ export const metadata: Metadata = {
     "sustainability",
   ],
   authors: [{ name: "OpenGHG" }],
+  icons: {
+    icon: "/favicon_openghg.svg",
+    apple: "/favicon_openghg.svg",
+  },
   openGraph: {
-    title: "OpenGHG — Free, open source carbon calculator",
+    title: "OpenGHG — Open Source Carbon Calculator",
     description:
       "Calculate your GHG emissions transparently. All factors visible, all methodology documented.",
     type: "website",
     url: "https://openghg.org",
   },
 };
+
+// ─────────────────────────────────────────────
+// Font configuration
+// ─────────────────────────────────────────────
+
+const syne = Syne({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-syne",
+  display: "swap",
+});
+
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  weight: ["300", "400", "500"],
+  variable: "--font-dm-sans",
+  display: "swap",
+});
 
 // ─────────────────────────────────────────────
 // Root layout
