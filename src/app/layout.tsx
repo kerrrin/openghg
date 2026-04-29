@@ -1,6 +1,15 @@
+/**
+ * @file layout.tsx
+ * @description Root layout for OpenGHG.
+ */
+
 import type { Metadata } from "next";
 import { Syne, DM_Sans } from "next/font/google";
 import "./globals.css";
+
+// ─────────────────────────────────────────────
+// Font configuration
+// ─────────────────────────────────────────────
 
 const syne = Syne({
   subsets: ["latin"],
@@ -16,10 +25,36 @@ const dmSans = DM_Sans({
   display: "swap",
 });
 
+// ─────────────────────────────────────────────
+// Page metadata
+// ─────────────────────────────────────────────
+
 export const metadata: Metadata = {
-  title: "Open Source Carbon Accounting",
-  description: "A free GHG emissions calculator built on the GHG Protocol.",
+  title: "OpenGHG — Free, open source carbon calculator",
+  description:
+    "A free, open source GHG emissions calculator built on the GHG Protocol. " +
+    "All emission factors visible, all methodology documented.",
+  keywords: [
+    "carbon calculator",
+    "GHG Protocol",
+    "Scope 3",
+    "emissions inventory",
+    "open source",
+    "sustainability",
+  ],
+  authors: [{ name: "OpenGHG" }],
+  openGraph: {
+    title: "OpenGHG — Free, open source carbon calculator",
+    description:
+      "Calculate your GHG emissions transparently. All factors visible, all methodology documented.",
+    type: "website",
+    url: "https://openghg.org",
+  },
 };
+
+// ─────────────────────────────────────────────
+// Root layout
+// ─────────────────────────────────────────────
 
 export default function RootLayout({
   children,

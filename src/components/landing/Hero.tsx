@@ -1,144 +1,269 @@
+/**
+ * @file Hero.tsx
+ * @description Landing page section.
+ *
+ * @dependencies
+ *   recharts        — PieChart / donut chart
+ *   constants.ts    — COLORS, SCOPE_COLORS
+ *   styles.ts       — inputStyle, labelStyle
+ */
+
 "use client";
 
 import { useState } from "react";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 import { COLORS, SCOPE_COLORS } from "@/lib/constants";
-import { inputStyle, labelStyle } from "@/lib/styles";
+import { inputStyle, labelStyle, eyebrowStyle, headingStyle, bodyStyle, buttonPrimaryStyle } from "@/lib/styles";
 
-const SECTORS = [
-  { label: "Select sector", value: "" },
-  { label: "Oil and Gas Extraction", value: "2.1" },
-  { label: "Mining and Quarrying", value: "1.8" },
+// ─────────────────────────────────────────────
+// Types
+// ─────────────────────────────────────────────
+
+type EstimateResult = {
+  total: number;
+  s1: number;
+  s2: number;
+  s3: number;
+}
+
+type ChartEntry = {
+  name: string;
+  value: number;
+}
+
+type Sector = {
+  label: string;
+  value: string; // kgCO2e per EUR revenue (millions)
+}
+
+// ─────────────────────────────────────────────
+// Static data
+// ─────────────────────────────────────────────
+
+const SECTORS: Sector[] = [
+  { label: "Select sector",            value: "" },
+  { label: "Oil and Gas Extraction",   value: "2.1" },
+  { label: "Mining and Quarrying",     value: "1.8" },
   { label: "Electricity and Gas Supply", value: "3.2" },
   { label: "Water and Waste Management", value: "1.4" },
-  { label: "Food and Beverage", value: "1.6" },
-  { label: "Textiles and Apparel", value: "1.3" },
-  { label: "Chemicals and Plastics", value: "2.8" },
-  { label: "Manufacturing: Light", value: "1.2" },
-  { label: "Manufacturing: Heavy", value: "3.8" },
-  { label: "Construction", value: "2.4" },
-  { label: "Transport and Logistics", value: "4.2" },
-  { label: "Retail and Wholesale", value: "0.9" },
-  { label: "Financial Services", value: "0.4" },
-  { label: "Professional Services", value: "0.8" },
-  { label: "Technology and Software", value: "0.6" },
-  { label: "Healthcare", value: "1.0" },
-  { label: "Education", value: "0.5" },
-  { label: "Hospitality and Tourism", value: "1.1" },
+  { label: "Food and Beverage",        value: "1.6" },
+  { label: "Textiles and Apparel",     value: "1.3" },
+  { label: "Chemicals and Plastics",   value: "2.8" },
+  { label: "Manufacturing: Light",     value: "1.2" },
+  { label: "Manufacturing: Heavy",     value: "3.8" },
+  { label: "Construction",             value: "2.4" },
+  { label: "Transport and Logistics",  value: "4.2" },
+  { label: "Retail and Wholesale",     value: "0.9" },
+  { label: "Financial Services",       value: "0.4" },
+  { label: "Professional Services",    value: "0.8" },
+  { label: "Technology and Software",  value: "0.6" },
+  { label: "Healthcare",               value: "1.0" },
+  { label: "Education",                value: "0.5" },
+  { label: "Hospitality and Tourism",  value: "1.1" },
   { label: "Agriculture and Forestry", value: "3.5" },
-  { label: "Real Estate", value: "0.7" },
+  { label: "Real Estate",              value: "0.7" },
 ];
 
-const CURRENCIES = ["EUR", "GBP", "USD", "CHF", "AUD", "CAD", "JPY", "CNY", "INR"];
+// TODO: replace with unit conversion from units table
+// once Supabase is connected
+const CURRENCIES: string[] = [
+  "EUR", "GBP", "USD", "CHF", "AUD", "CAD", "JPY", "CNY", "INR",
+];
+
+// Rough global average scope split ratios
+// TODO: make sector-specific when EF library is live
+const SCOPE_1_SHARE = 0.08;
+const SCOPE_2_SHARE = 0.12;
+
+// ─────────────────────────────────────────────
+// Styles local to this component
+// ─────────────────────────────────────────────
+
+const sectionStyle = {
+  padding: "80px 40px 64px",
+  display: "grid",
+  gridTemplateColumns: "1fr 1fr",
+  gap: "64px",
+  alignItems: "start",
+} satisfies React.CSSProperties;
+
+const widgetStyle = {
+  background: COLORS.greenElectric,
+  borderRadius: "16px",
+  padding: "32px",
+} satisfies React.CSSProperties;
+
+const widgetLabelStyle = {
+  fontSize: "11px",
+  fontWeight: 500,
+  letterSpacing: "2px",
+  color: COLORS.black,
+  textTransform: "uppercase" as const,
+  marginBottom: "24px",
+  opacity: 0.5,
+} satisfies React.CSSProperties;
+
+const estimateButtonStyle = {
+  width: "100%",
+  background: COLORS.greenDeep,
+  color: COLORS.greenElectric,
+  border: "none",
+  borderRadius: "8px",
+  padding: "13px",
+  fontSize: "14px",
+  fontWeight: 500,
+  marginTop: "6px",
+  cursor: "pointer",
+  fontFamily: "var(--font-dm-sans)",
+} satisfies React.CSSProperties;
+
+const resultDividerStyle = {
+  marginTop: "20px",
+  paddingTop: "20px",
+  borderTop: "0.5px solid rgba(0,0,0,0.1)",
+} satisfies React.CSSProperties;
+
+const totalLabelStyle = {
+  fontSize: "11px",
+  color: COLORS.black,
+  opacity: 0.4,
+  letterSpacing: "1.5px",
+  textTransform: "uppercase" as const,
+  marginBottom: "6px",
+} satisfies React.CSSProperties;
+
+const totalValueStyle = {
+  fontFamily: "var(--font-syne)",
+  fontWeight: 800,
+  fontSize: "40px",
+  color: COLORS.black,
+  letterSpacing: "-1.5px",
+  lineHeight: 1,
+} satisfies React.CSSProperties;
+
+const totalUnitStyle = {
+  fontSize: "13px",
+  color: COLORS.black,
+  opacity: 0.4,
+} satisfies React.CSSProperties;
+
+const nudgeStyle = {
+  marginTop: "16px",
+  fontSize: "12px",
+  color: COLORS.black,
+  opacity: 0.45,
+  lineHeight: 1.6,
+} satisfies React.CSSProperties;
+
+const nudgeLinkStyle = {
+  color: COLORS.greenDeep,
+  opacity: 1,
+  cursor: "pointer",
+  fontWeight: 500,
+} satisfies React.CSSProperties;
+
+// ─────────────────────────────────────────────
+// Component
+// ─────────────────────────────────────────────
 
 export default function Hero() {
-  const [revenue, setRevenue] = useState("");
-  const [currency, setCurrency] = useState("EUR");
-  const [sector, setSector] = useState("");
-  const [result, setResult] = useState<{
-    total: number;
-    s1: number;
-    s2: number;
-    s3: number;
-  } | null>(null);
 
-  function estimate() {
-    const rev = parseFloat(revenue);
-    const factor = parseFloat(sector);
-    if (!rev || !factor) return;
-    const total = Math.round(rev * factor / 1000000 * 10) / 10;
-    const s1 = Math.round(total * 0.08 * 10) / 10;
-    const s2 = Math.round(total * 0.12 * 10) / 10;
-    const s3 = Math.round((total - s1 - s2) * 10) / 10;
-    setResult({ total, s1, s2, s3 });
-  }
+  // ── State ──────────────────────────────────
+  const [revenue, setRevenue]   = useState<string>("");
+  const [currency, setCurrency] = useState<string>("EUR");
+  const [sector, setSector]     = useState<string>("");
+  const [result, setResult]     = useState<EstimateResult | null>(null);
 
-  const chartData = result ? [
+  // ── Derived ────────────────────────────────
+
+  /**
+   * Builds chart data array from result state.
+   * Returns empty array when no result yet — prevents chart render.
+   */
+  const chartData: ChartEntry[] = result ? [
     { name: "Scope 1", value: result.s1 },
     { name: "Scope 2", value: result.s2 },
     { name: "Scope 3", value: result.s3 },
   ] : [];
 
-  return (
-    <section style={{
-      padding: "80px 40px 64px",
-      display: "grid",
-      gridTemplateColumns: "1fr 1fr",
-      gap: "64px",
-      alignItems: "start",
-    }}>
+  // ── Handlers ───────────────────────────────
 
-      {/* Left — text */}
+  /**
+   * Calculates a rough emission estimate from revenue and sector.
+   * Uses hardcoded intensity factors (kgCO2e per EUR of revenue).
+   * Scope split is a rough global average — not sector specific.
+   *
+   * Formula: total = revenue × factor / 1,000,000
+   * Rounded to 1 decimal place for display clarity.
+   *
+   * TODO: replace with API call to emission_factors table
+   * TODO: apply currency conversion before calculation
+   */
+  function estimate(): void {
+    const rev    = parseFloat(revenue);
+    const factor = parseFloat(sector);
+
+    // Guard: require both revenue and sector to proceed
+    if (!rev || !factor) return;
+
+    const total = Math.round(rev * factor / 1_000_000 * 10) / 10;
+    const s1    = Math.round(total * SCOPE_1_SHARE * 10) / 10;
+    const s2    = Math.round(total * SCOPE_2_SHARE * 10) / 10;
+    const s3    = Math.round((total - s1 - s2) * 10) / 10;
+
+    setResult({ total, s1, s2, s3 });
+  }
+
+  // TODO: wire up to auth flow when sign up is built
+  function handleCreateAccount(): void {
+    console.log("[Hero] create account clicked — auth flow not yet implemented");
+  }
+
+  // TODO: wire up to onboarding flow when built
+  function handleStartInventory(): void {
+    console.log("[Hero] start inventory clicked — onboarding not yet built");
+  }
+
+  // ── Render ─────────────────────────────────
+  return (
+    <section style={sectionStyle}>
+
+      {/* ── Left — headline and CTA ── */}
       <div>
-        <p style={{
-          fontSize: "11px",
-          fontWeight: 500,
-          letterSpacing: "2.5px",
-          color: COLORS.greenDeep,
-          textTransform: "uppercase",
-          marginBottom: "24px",
-        }}>
+        <p style={eyebrowStyle}>
           Free · Open source · GHG Protocol
         </p>
 
-        <h1 style={{
-          fontFamily: "var(--font-syne)",
-          fontWeight: 800,
-          fontSize: "52px",
-          lineHeight: 1.02,
-          color: COLORS.black,
-          letterSpacing: "-2.5px",
-          marginBottom: "24px",
-        }}>
-          Your title<br />goes <em style={{ color: "#2D5C3F", fontStyle: "normal" }}>here.</em>
+        <h1 style={headingStyle}>
+          Your title<br />
+          goes <em style={{ color: COLORS.greenDeep, fontStyle: "normal" }}>here.</em>
         </h1>
 
-        <p style={{
-          fontSize: "15px",
-          color: COLORS.black,
-          opacity: 0.45,
-          lineHeight: 1.75,
-          fontWeight: 300,
-          maxWidth: "380px",
-          marginBottom: "36px",
-        }}>
-          Placeholder text for your landing page description. A sentence or two about what OpenGHG does and why it exists.
+        <p style={{ ...bodyStyle, maxWidth: "380px", marginBottom: "36px" }}>
+          Placeholder text for your landing page description.
+          A sentence or two about what OpenGHG does and why it exists.
         </p>
 
-        <button style={{
-          background: COLORS.greenDeep,
-          color: COLORS.greenElectric,
-          padding: "14px 28px",
-          borderRadius: "100px",
-          fontSize: "14px",
-          fontWeight: 500,
-          border: "none",
-          cursor: "pointer",
-        }}>
+        <button
+          style={buttonPrimaryStyle}
+          onClick={handleStartInventory}
+          aria-label="Start your full GHG inventory"
+        >
           Start full inventory →
         </button>
       </div>
 
-      {/* Right — estimate widget */}
-      <div style={{
-        background: COLORS.greenElectric,
-        borderRadius: "16px",
-        padding: "32px",
-      }}>
-        <p style={{
-          fontSize: "11px",
-          fontWeight: 500,
-          letterSpacing: "2px",
-          color: COLORS.black,
-          textTransform: "uppercase",
-          marginBottom: "24px",
-          opacity: 0.5,
-        }}>
-          Quick estimate
-        </p>
+      {/* ── Right — quick estimate widget ── */}
+      <div style={widgetStyle}>
+        <p style={widgetLabelStyle}>Quick estimate</p>
 
-        {/* Revenue + currency row */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "14px" }}>
+        {/* Revenue and currency row */}
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: "12px",
+          marginBottom: "14px",
+        }}>
           <div>
             <label style={labelStyle}>Annual revenue</label>
             <input
@@ -147,6 +272,7 @@ export default function Hero() {
               value={revenue}
               onChange={e => setRevenue(e.target.value)}
               style={inputStyle}
+              aria-label="Annual revenue"
             />
           </div>
           <div>
@@ -155,19 +281,23 @@ export default function Hero() {
               value={currency}
               onChange={e => setCurrency(e.target.value)}
               style={inputStyle}
+              aria-label="Select currency"
             >
-              {CURRENCIES.map(c => <option key={c}>{c}</option>)}
+              {CURRENCIES.map(c => (
+                <option key={c} value={c}>{c}</option>
+              ))}
             </select>
           </div>
         </div>
 
-        {/* Sector */}
+        {/* Sector selector */}
         <div style={{ marginBottom: "14px" }}>
           <label style={labelStyle}>Sector</label>
           <select
             value={sector}
             onChange={e => setSector(e.target.value)}
             style={inputStyle}
+            aria-label="Select your sector"
           >
             {SECTORS.map(s => (
               <option key={s.label} value={s.value}>{s.label}</option>
@@ -175,61 +305,35 @@ export default function Hero() {
           </select>
         </div>
 
+        {/* Estimate button */}
         <button
           onClick={estimate}
-          style={{
-            width: "100%",
-            background: COLORS.greenDeep,
-            color: COLORS.greenElectric,
-            border: "none",
-            borderRadius: "8px",
-            padding: "13px",
-            fontSize: "14px",
-            fontWeight: 500,
-            marginTop: "6px",
-            cursor: "pointer",
-          }}
+          style={estimateButtonStyle}
+          aria-label="Calculate emission estimate"
         >
           Estimate emissions →
         </button>
 
-        {/* Result */}
+        {/* ── Result — shown after estimate is calculated ── */}
         {result && (
-          <div style={{
-            marginTop: "20px",
-            paddingTop: "20px",
-            borderTop: "0.5px solid rgba(0,0,0,0.1)",
-          }}>
+          <div style={resultDividerStyle}>
 
-            {/* Total number */}
-            <p style={{
-              fontSize: "11px",
-              color: COLORS.black,
-              opacity: 0.4,
-              letterSpacing: "1.5px",
-              textTransform: "uppercase",
-              marginBottom: "6px",
+            {/* Total */}
+            <p style={totalLabelStyle}>Estimated total</p>
+            <div style={{
+              display: "flex",
+              alignItems: "baseline",
+              gap: "6px",
+              marginBottom: "8px",
             }}>
-              Estimated total
-            </p>
-            <div style={{ display: "flex", alignItems: "baseline", gap: "6px", marginBottom: "8px" }}>
-              <span style={{
-                fontFamily: "var(--font-syne)",
-                fontWeight: 800,
-                fontSize: "40px",
-                color: COLORS.black,
-                letterSpacing: "-1.5px",
-                lineHeight: 1,
-              }}>
+              <span style={totalValueStyle}>
                 {result.total.toLocaleString()}
               </span>
-              <span style={{ fontSize: "13px", color: COLORS.black, opacity: 0.4 }}>
-                tCO₂e / year
-              </span>
+              <span style={totalUnitStyle}>tCO₂e / year</span>
             </div>
 
             {/* Donut chart */}
-            <div style={{ width: "100%", height: "200px", position: "relative" }}>
+            <div style={{ width: "100%", height: "200px" }}>
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -242,11 +346,18 @@ export default function Hero() {
                     dataKey="value"
                   >
                     {chartData.map((_, index) => (
-                      <Cell key={index} fill={SCOPE_COLORS[index]} />
+                      <Cell
+                        key={`scope-${index}`}
+                        fill={SCOPE_COLORS[index]}
+                      />
                     ))}
                   </Pie>
                   <Tooltip
-                    formatter={(value, name) => value != null ? [`${value.toLocaleString()} tCO₂e`, name] : ["", ""]}
+                    formatter={(value, name) =>
+                      value != null
+                        ? [`${Number(value).toLocaleString()} tCO₂e`, name]
+                        : ["", ""]
+                    }
                     contentStyle={{
                       background: COLORS.black,
                       border: "none",
@@ -260,9 +371,21 @@ export default function Hero() {
             </div>
 
             {/* Legend */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginTop: "8px" }}>
+            <div style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "8px",
+              marginTop: "8px",
+            }}>
               {chartData.map((entry, index) => (
-                <div key={entry.name} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div
+                  key={entry.name}
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
                   <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                     <div style={{
                       width: "10px",
@@ -271,7 +394,13 @@ export default function Hero() {
                       background: SCOPE_COLORS[index],
                       flexShrink: 0,
                     }} />
-                    <span style={{ fontSize: "12px", color: COLORS.black, opacity: 0.6 }}>{entry.name}</span>
+                    <span style={{
+                      fontSize: "12px",
+                      color: COLORS.black,
+                      opacity: 0.6,
+                    }}>
+                      {entry.name}
+                    </span>
                   </div>
                   <span style={{
                     fontFamily: "var(--font-syne)",
@@ -285,17 +414,25 @@ export default function Hero() {
               ))}
             </div>
 
-            {/* Nudge */}
-            <p style={{ marginTop: "16px", fontSize: "12px", color: COLORS.black, opacity: 0.45, lineHeight: 1.6 }}>
+            {/* Sign up nudge */}
+            <p style={nudgeStyle}>
               This is a rough estimate only.{" "}
-              <span style={{ color: COLORS.greenDeep, opacity: 1, cursor: "pointer", fontWeight: 500 }}>
+              <span
+                style={nudgeLinkStyle}
+                onClick={handleCreateAccount}
+                role="button"
+                tabIndex={0}
+                aria-label="Create a free account for a full inventory"
+              >
                 Create a free account
               </span>{" "}
-              to build a full inventory.
+              to build a full GHG Protocol inventory.
             </p>
+
           </div>
         )}
       </div>
+
     </section>
   );
 }
