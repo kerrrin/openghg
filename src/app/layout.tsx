@@ -1,7 +1,3 @@
-/**
- * @file layout.tsx
- * @description Root layout for OpenGHG.
- */
 
 import type { Metadata } from "next";
 import "./globals.css";
@@ -12,7 +8,7 @@ import { Unbounded, Geist, Geist_Mono } from "next/font/google";
 // ─────────────────────────────────────────────
 
 export const metadata: Metadata = {
-  title: "OpenGHG — Free, open source carbon calculator",
+  title: "OpenGHG",
   description:
     "A free, open source GHG emissions calculator built on the GHG Protocol. " +
     "All emission factors visible, all methodology documented.",
@@ -30,7 +26,7 @@ export const metadata: Metadata = {
     apple: "/favicon_openghg.svg",
   },
   openGraph: {
-    title: "OpenGHG — Open Source Carbon Calculator",
+    title: "OpenGHG",
     description:
       "Calculate your GHG emissions transparently. All factors visible, all methodology documented.",
     type: "website",

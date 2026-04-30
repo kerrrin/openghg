@@ -1,21 +1,13 @@
-/**
- * @file page.tsx
- * @description Landing page for OpenGHG.
- * Shows splash screen on first load, then reveals landing page.
- */
-
 "use client";
 
 import { useState, useEffect } from "react";
 import SplashScreen from "@/components/landing/SplashScreen";
-import Navbar from "@/components/landing/Navbar";
-import Hero from "@/components/landing/Hero";
+import Layout from "@/components/landing/Layout";
 
 export default function Home() {
   const [showSplash, setShowSplash] = useState(true);
 
   useEffect(() => {
-    // Only show splash once per session
     const seen = sessionStorage.getItem("splash_seen");
     if (seen) setShowSplash(false);
   }, []);
@@ -30,10 +22,7 @@ export default function Home() {
       {showSplash && (
         <SplashScreen onComplete={handleSplashComplete} />
       )}
-      <main>
-        <Navbar />
-        <Hero />
-      </main>
+      <Layout />
     </>
   );
 }

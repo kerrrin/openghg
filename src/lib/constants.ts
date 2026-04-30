@@ -4,7 +4,7 @@
  */
 
 // ─────────────────────────────────────────────
-// Brand colours
+// Colours
 // ─────────────────────────────────────────────
 
 export const COLORS = {
@@ -49,3 +49,9 @@ export const DATA_QUALITY = {
   LOW:    3,
 } as const;
 export type DataQuality = typeof DATA_QUALITY[keyof typeof DATA_QUALITY];
+
+export const FONTS = {
+  heading: "var(--font-unbounded)",
+  body:    "var(--font-geist)",
+  mono:    "var(--font-geist-mono)",
+} as const;
