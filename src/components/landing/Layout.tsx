@@ -17,7 +17,7 @@ const rootStyle: CSSProperties = {
   gap: "1px",
   fontFamily: "var(--font-geist)",
   minHeight: "100vh",
-  borderRadius: "15px",
+  borderRadius: "1px",
   overflow: "hidden",
 };
 
@@ -58,7 +58,7 @@ const estimatorStyle: CSSProperties = {
 const estLabelStyle: CSSProperties = {
   fontSize: "10px",
   letterSpacing: "2px",
-  color: COLORS.slate,
+  color: COLORS.sage,
   textTransform: "uppercase",
   marginBottom: "12px",
   fontFamily: "var(--font-geist)",
@@ -75,7 +75,7 @@ const estTitleStyle: CSSProperties = {
 
 const estSubStyle: CSSProperties = {
   fontSize: "12px",
-  color: COLORS.slate,
+  color: COLORS.sage,
   marginBottom: "24px",
   fontFamily: "var(--font-geist)",
 };

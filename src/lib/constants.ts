@@ -3,20 +3,41 @@
  * @description Global constants for OpenGHG.
  */
 
+import { emitWarning } from "process";
+import { text } from "stream/consumers";
+
 // ─────────────────────────────────────────────
 // Colours
 // ─────────────────────────────────────────────
 
 export const COLORS = {
-  greenDeep:     "#2D5C3F",  // primary
-  greenElectric: "#C8F135",  // primary accent
-  black:         "#1E1E1E",  // dark
-  magenta:       "#B04F9D",  // secondary accent
-  sage:          "#D4E0D8",  // light
-  slate:         "#8A9EAA",  // muted
-  lavender:      "#C4A0D4",  // tertiary accent
-  red:           "#E82E57",  // alerts, errors, warnings
-  white:         "#ffffff",  // background
+  text:        "#0E1520", 
+  page:        "#F0F2F5",  
+  base:        "#1C2432",  
+  border:      "#3D4E68",  
+  textMuted:   "#8A9AB8",  
+  
+  volt:        "#C8F135",  
+  voltLight:   "#DCF56A",  
+  voltTint:    "#EEF9B0", 
+
+  scope1:       "#1E2060", 
+  scope2:       "#818CF8",  
+  scope3:       "#DCF56A",   
+
+  accentOrange: "#ff8147",  
+  accentPurple: "#c092ff",
+  danger:       "#E82E48",  
+
+  sage:          "#D4E0D8",
+  blue:          "#6366E8",
+  blueMedium:    "#4F52D8",
+  blueDark:      "#3B3EC8",
+  blueVeryDark:  "#2728A8",
+  
+  greenElectric: "#C8F135",  
+  black:         "#1E1E1E",  
+  white:         "#FFFFFF",  
 } as const;
 
 export type ColorKey = keyof typeof COLORS;
@@ -27,9 +48,9 @@ export type ColorValue = typeof COLORS[ColorKey];
 // ─────────────────────────────────────────────
 
 export const SCOPE_COLORS: [string, string, string] = [
-  COLORS.greenDeep,            // Scope 1
-  COLORS.magenta,             // Scope 2
-  COLORS.greenElectric,      // Scope 3
+  COLORS.scope1,            
+  COLORS.scope2,            
+  COLORS.scope3,      
 ];
 
 // ─────────────────────────────────────────────

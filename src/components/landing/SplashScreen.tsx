@@ -17,9 +17,9 @@ export default function SplashScreen({ onComplete }: Props) {
     const R = 320;
     const GAP_START_DEG = -18;
     const TOTAL_DEG = 335;
-    const DRAW_MS = 1050;
-    const HOLD_MS = 600;
-    const FADE_MS = 700;
+    const DRAW_MS = 1400;
+    const HOLD_MS = 1200;
+    const FADE_MS = 900;
 
     function toRad(deg: number) { return deg * Math.PI / 180; }
 
@@ -54,6 +54,7 @@ export default function SplashScreen({ onComplete }: Props) {
         setTimeout(() => {
           if (splashRef.current) {
             splashRef.current.style.opacity = "0";
+            splashRef.current.style.transition = "opacity 0.9s ease";
           }
           setTimeout(() => {
             setVisible(false);
@@ -86,7 +87,7 @@ export default function SplashScreen({ onComplete }: Props) {
         alignItems: "center",
         justifyContent: "center",
         zIndex: 9999,
-        transition: "opacity 0.7s ease",
+        opacity: 1,
       }}
     >
       <svg

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Unbounded, Geist, Geist_Mono } from "next/font/google";
+import { AuthProvider } from "@/context/AuthContext";
 
 // ─────────────────────────────────────────────
 // Metadata
@@ -72,8 +73,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${unbounded.variable} ${geist.variable} ${geistMono.variable} antialiased`}>
-        {children}
-      </body>
+  <AuthProvider>
+    {children}
+  </AuthProvider>
+</body>
     </html>
   );
 }
