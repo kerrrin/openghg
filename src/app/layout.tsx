@@ -1,26 +1,27 @@
-
 import type { Metadata } from "next";
 import "./globals.css";
 import { Unbounded, Geist, Geist_Mono } from "next/font/google";
 
 // ─────────────────────────────────────────────
-// Page metadata
+// Metadata
 // ─────────────────────────────────────────────
 
 export const metadata: Metadata = {
   title: "OpenGHG",
   description:
-    "A free, open source GHG emissions calculator built on the GHG Protocol. " +
+    "An open source GHG emissions calculator built on the GHG Protocol. " +
     "All emission factors visible, all methodology documented.",
   keywords: [
     "carbon calculator",
     "GHG Protocol",
     "Scope 3",
+    "ISO 14064-1",
     "emissions inventory",
     "open source",
+    "free",
     "sustainability",
   ],
-  authors: [{ name: "OpenGHG" }],
+  authors: [{ name: "Placeholder" }],
   icons: {
     icon: "/favicon_openghg.svg",
     apple: "/favicon_openghg.svg",
@@ -35,7 +36,7 @@ export const metadata: Metadata = {
 };
 
 // ─────────────────────────────────────────────
-// Font configuration
+// Fonts
 // ─────────────────────────────────────────────
 
 const unbounded = Unbounded({
@@ -60,7 +61,7 @@ const geistMono = Geist_Mono({
 });
 
 // ─────────────────────────────────────────────
-// Root layout
+// Root Layout
 // ─────────────────────────────────────────────
 
 export default function RootLayout({

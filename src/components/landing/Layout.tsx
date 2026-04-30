@@ -3,6 +3,7 @@
 import type { CSSProperties } from "react";
 import Image from "next/image";
 import { COLORS } from "@/lib/constants";
+import styles from "./Layout.module.css";
 
 // ─────────────────────────────────────────────
 // Styles
@@ -12,7 +13,7 @@ const rootStyle: CSSProperties = {
   background: COLORS.black,
   padding: "1px",
   display: "grid",
-  gridTemplateColumns: "1fr 1.6fr",
+  gridTemplateColumns: "1fr 1fr",
   gap: "1px",
   fontFamily: "var(--font-geist)",
   minHeight: "100vh",
@@ -22,55 +23,32 @@ const rootStyle: CSSProperties = {
 
 const leftStyle: CSSProperties = {
   background: COLORS.white,
-  borderRadius: "12px",  // all corners rounded
+  borderRadius: "8px",  // all corners rounded
   padding: "18px",
   display: "flex",
   flexDirection: "column",
-  justifyContent: "flex-start",
+  justifyContent: "space-between",
   alignItems: "flex-start",
 };
 
 const rightStyle: CSSProperties = {
   display: "flex",
   flexDirection: "column",
-  gap: "2px",
+  gap: "1px",
 };
 
 const navBarStyle: CSSProperties = {
   background: COLORS.white,
-  borderRadius: "12px",  // all corners rounded
+  borderRadius: "8px",  // all corners rounded
   padding: "10px 14px",
   display: "flex",
   alignItems: "center",
   gap: "6px",
 };
 
-const navItemStyle: CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  padding: "5px 14px",
-  border: "0.5px solid rgba(0,0,0,0.12)",
-  borderRadius: "100px",
-  cursor: "pointer",
-  textDecoration: "none",
-  fontSize: "12px",
-  fontWeight: 500,
-  color: COLORS.black,
-  fontFamily: "var(--font-geist)",
-  whiteSpace: "nowrap",
-};
-
-const navItemLoginStyle: CSSProperties = {
-  ...navItemStyle,
-  background: COLORS.black,
-  border: `1px solid ${COLORS.black}`,
-  color: COLORS.greenElectric,
-  marginLeft: "auto",
-};
-
 const estimatorStyle: CSSProperties = {
   background: COLORS.white,
-  borderRadius: "12px",  // all corners rounded
+  borderRadius: "8px",  // all corners rounded
   flex: 1,
   padding: "28px 32px",
   display: "flex",
@@ -111,18 +89,6 @@ const estPlaceholderStyle: CSSProperties = {
   justifyContent: "center",
 };
 
-const logoLockupStyle: CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-};
-
-const wordmarkStyle: CSSProperties = {
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "flex-end",
-  marginLeft: "-2px",
-};
-
 const penStyle: CSSProperties = {
   fontFamily: "var(--font-unbounded)",
   fontWeight: 400,
@@ -156,16 +122,35 @@ export default function Layout() {
 
   return (
     <div style={rootStyle}>
+
+      {/* ── Left panel ── */}
       <div style={leftStyle}>
-        <div style={logoLockupStyle}>
-          <Image
-            src="OGHG_Logo_Black.svg"
-            alt="OpenGHG Logo"
-            width={120}
-            height={60.1}
-            style={{ flexShrink: 0 }}
-          />
-       </div>
+
+          {/* Landing text — vertically centred */}
+          <div style={{ flex: 1, display: "flex", alignItems: "center" }}>
+            <div>
+              <h1 style={{
+              fontFamily: "var(--font-unbounded)",
+              fontWeight: 700,
+              fontSize: "clamp(90px, 3.5vw, 52px)",
+              lineHeight: 1.2,
+              letterSpacing: "-1.5px",
+              color: COLORS.black,
+            }}>
+              Carbon Accounting<br />for
+            </h1>
+            <h1 style={{
+              fontFamily: "var(--font-unbounded)",
+              fontWeight: 700,
+              fontSize: "clamp(90px, 3.5vw, 52px)",
+              lineHeight: 1.05,
+              letterSpacing: "-1.5px",
+              color:" #4F52D8",
+            }}>
+              Everyone.
+            </h1>
+          </div>
+        </div>
       </div>
 
       {/* ── Right panel ── */}
@@ -177,15 +162,15 @@ export default function Layout() {
             <a
               key={item.label}
               href={item.href}
-              style={navItemStyle}
+              className={styles.navItem}
               aria-label={item.label}
             >
-              {item.label} <span style={{ marginLeft: "4px" }}>{item.arrow}</span>
+              {item.label}
             </a>
           ))}
           <a
             href="/login"
-            style={navItemLoginStyle}
+            className={styles.navItemLogin}
             aria-label="Log in to your account"
           >
             Log in
@@ -199,7 +184,7 @@ export default function Layout() {
             How much does your organisation emit?
           </h1>
           <p style={estSubStyle}>
-            Enter your revenue and sector for an instant estimate.
+            Enter your revenue for an instant estimate.
           </p>
           <div style={estPlaceholderStyle}>
             <span style={{ fontSize: "11px", color: "#ddd", letterSpacing: "1.5px", textTransform: "uppercase" }}>

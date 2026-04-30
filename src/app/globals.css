@@ -5,25 +5,46 @@
 }
 
 :root {
-  --green-deep:    #2D5C3F;
-  --green-electric: #C8F135;
-  --black:         #1E1E1E;
-  --magenta:       #B04F9D;
-  --sage:          #D4E0D8;
-  --slate:         #8A9EAA;
-  --lavender:      #C4A0D4;
-  --red:           #E82E57;
-  --white:         #ffffff;
 
-  :root {
+  /* ── Primary ── */
+  --color-text:         #0E1520;   /* primary text */
+  --color-page:         #F0F2F5;   /* page background */
+  --color-base:         #1C2432;   /* base surface */
+  --color-text-muted:   #8A9AB8;   /* secondary text */
+  --color-border:       #3D4E68;   /* borders */
+
+  /* ── Secondary ── */
+  --color-volt:         #C8F135;   /* electric green — primary accent */
+  --color-volt-light:   #DCF56A;   /* lighter green */
+  --color-volt-tint:    #EEF9B0;   /* pale green tint */
+
+  /* ── Scope colours ── */
+  --color-scope1:       #1E2060;   /* Scope 1 — deep navy */
+  --color-scope2:       #818CF8;   /* Scope 2 — periwinkle */
+  --color-scope3:       #DCF56A;   /* Scope 3 — lime */
+
+  /* ── Tertiary ── */
+  --color-warning:      #FFAB76;   /* amber warning */
+  --color-danger:       #E11D48;   /* red error / alert */
+
+  /* ── Legacy colours ── */
+  --green-deep:     #818CF8;
+  --green-electric: #C8F135;
+  --black:          #0E1520;
+  --magenta:        #B04F9D;
+  --sage:           #D4E0D8;
+  --slate:          #8A9EAA;
+  --lavender:       #C4A0D4;
+  --red:            #E82E57;
+  --white:          #F0F2F5;
+
   --font-heading:   var(--font-unbounded);
   --font-body:      var(--font-geist);
   --font-mono:      var(--font-geist-mono);
 }
-}
 
 html {
-  font-family: var(--font-body), sans-serif;
+  font-family: var(--font-geist), sans-serif;
   color: var(--black);
   background: var(--white);
   -webkit-font-smoothing: antialiased;
@@ -38,9 +59,15 @@ body {
   font-family: var(--font-geist), sans-serif;
 }
 
+a {
+  color: inherit;
+  text-decoration: none;
+  font-family: var(--font-geist-mono), sans-serif;
+}
+
 button {
   cursor: pointer;
-  font-family: var(--font-geist), sans-serif;
+  font-family: var(--font-geist-mono), sans-serif;
 }
 
 input, select, textarea {
