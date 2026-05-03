@@ -4,6 +4,10 @@ import type { CSSProperties } from "react";
 import Image from "next/image";
 import { COLORS } from "@/lib/constants";
 import styles from "./Layout.module.css";
+import { useState } from "react";
+import AuthModal from "@/components/auth/AuthModal";
+import AboutModal from "@/components/landing/AboutModal";
+
 
 // ─────────────────────────────────────────────
 // Styles
@@ -112,15 +116,23 @@ const ghgStyle: CSSProperties = {
 // ─────────────────────────────────────────────
 
 export default function Layout() {
+  const [authOpen, setAuthOpen] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
 
   // TODO: wire nav items to Next.js router when pages are built
-  const NAV_ITEMS: { label: string; href: string; arrow: string }[] = [
+  const NAV_ITEMS: { label: string; href: string; arrow: string; onClick?: () => void }[] = [
     { label: "Library", href: "/library", arrow: "→" },
     { label: "GitHub",  href: "https://github.com/kerrrin/openghg", arrow: "↗" },
-    { label: "About",   href: "/about", arrow: "→" },
+    {
+      label: "About", href: "#", onClick: () => setAboutOpen(true),
+      arrow: ""
+    },
   ];
 
   return (
+    <>
+    <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} />
+    <AboutModal isOpen={aboutOpen} onClose={() => setAboutOpen(false)} />
     <div style={rootStyle}>
 
       {/* ── Left panel ── */}
@@ -164,16 +176,29 @@ export default function Layout() {
               href={item.href}
               className={styles.navItem}
               aria-label={item.label}
+              onClick={item.onClick
+                ? e => {
+                    e.preventDefault();
+                    item.onClick?.();
+                  }
+                : undefined
+              }
+              target={item.href.startsWith("http") ? "_blank" : undefined}
+              rel={item.href.startsWith("http") ? "noopener noreferrer" : undefined}
             >
               {item.label}
             </a>
           ))}
           <a
-            href="/login"
+            href="#"
             className={styles.navItemLogin}
-            aria-label="Log in to your account"
+            aria-label="Calculate your emissions"
+            onClick={e => {
+              e.preventDefault();
+              setAuthOpen(true);
+            }}
           >
-            Log in
+            Calculate
           </a>
         </div>
 
@@ -195,5 +220,6 @@ export default function Layout() {
 
       </div>
     </div>
+    </>
   );
 }

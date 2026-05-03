@@ -7,28 +7,27 @@
 :root {
 
   /* ── Primary ── */
-  --color-text:         #0E1520;   /* primary text */
-  --color-page:         #F0F2F5;   /* page background */
-  --color-base:         #1C2432;   /* base surface */
-  --color-text-muted:   #8A9AB8;   /* secondary text */
-  --color-border:       #3D4E68;   /* borders */
+  --color-text:         #0E1520;   
+  --color-page:         #F0F2F5;   
+  --color-base:         #1C2432;   
+  --color-text-muted:   #8A9AB8;   
+  --color-border:       #3D4E68;   
 
   /* ── Secondary ── */
-  --color-volt:         #C8F135;   /* electric green — primary accent */
-  --color-volt-light:   #DCF56A;   /* lighter green */
-  --color-volt-tint:    #EEF9B0;   /* pale green tint */
+  --color-volt:         #C8F135;   
+  --color-volt-light:   #DCF56A;   
+  --color-volt-tint:    #EEF9B0;   
 
   /* ── Scope colours ── */
-  --color-scope1:       #1E2060;   /* Scope 1 — deep navy */
-  --color-scope2:       #818CF8;   /* Scope 2 — periwinkle */
-  --color-scope3:       #DCF56A;   /* Scope 3 — lime */
+  --color-scope1:       #1E2060;   
+  --color-scope2:       #818CF8;   
+  --color-scope3:       #DCF56A;   
 
   /* ── Tertiary ── */
-  --color-warning:      #FFAB76;   /* amber warning */
-  --color-danger:       #E11D48;   /* red error / alert */
+  --color-warning:      #ff8147;   
+  --color-danger:       #E82E48;   
 
   /* ── Legacy colours ── */
-  --green-deep:     #818CF8;
   --green-electric: #C8F135;
   --black:          #0E1520;
   --magenta:        #B04F9D;
@@ -36,7 +35,7 @@
   --slate:          #8A9EAA;
   --lavender:       #C4A0D4;
   --red:            #E82E57;
-  --white:          #F0F2F5;
+  --white:          #f0f2f5;
 
   --font-heading:   var(--font-unbounded);
   --font-body:      var(--font-geist);
