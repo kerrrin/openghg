@@ -49,18 +49,18 @@ export const subheadingStyle: CSSProperties = {
  * Geist 500, wide tracking.
  */
 export const eyebrowStyle: CSSProperties = {
-  fontFamily: "var(--font-geist)",
+  fontFamily: "var(--font-geist--mono)",
   fontSize: "11px",
   fontWeight: 500,
   letterSpacing: "2.5px",
-  color: COLORS.greenDeep,
+  color: COLORS.text,
   textTransform: "uppercase",
   marginBottom: "24px",
 };
 
 /** Body text — Geist 300, muted */
 export const bodyStyle: CSSProperties = {
-  fontFamily: "var(--font-geist)",
+  fontFamily: "var(--font-geist--mono)",
   fontSize: "15px",
   color: COLORS.black,
   opacity: 0.45,
@@ -125,13 +125,13 @@ export const dataUnitStyle: CSSProperties = {
 /** Standard input / select field */
 export const inputStyle: CSSProperties = {
   width: "100%",
-  background: "rgba(0,0,0,0.06)",
-  border: "0.5px solid rgba(0,0,0,0.12)",
-  borderRadius: "8px",
-  padding: "11px 14px",
+  background: "rgba(0,0,0,0.02)",
+  border: "1px solid rgb(1, 1, 1)",
+  borderRadius: "24px",
+  padding: "14px 14px",
   color: COLORS.black,
   fontSize: "14px",
-  fontFamily: "var(--font-geist)",
+  fontFamily: "var(--font-geist--mono)",
   outline: "none",
   appearance: "none",
 };
@@ -140,10 +140,10 @@ export const inputStyle: CSSProperties = {
 export const labelStyle: CSSProperties = {
   fontSize: "12px",
   color: COLORS.black,
-  opacity: 0.55,
-  marginBottom: "6px",
+  opacity: 0.6,
+  marginBottom: "8px",
   display: "block",
-  fontFamily: "var(--font-geist)",
+  fontFamily: "var(--font-unbounded)",
 };
 
 // ─────────────────────────────────────────────
@@ -152,7 +152,7 @@ export const labelStyle: CSSProperties = {
 
 /** Primary CTA — dark green with electric lime text */
 export const buttonPrimaryStyle: CSSProperties = {
-  background: COLORS.greenDeep,
+  background: COLORS.text,
   color: COLORS.greenElectric,
   padding: "14px 28px",
   borderRadius: "100px",
@@ -208,5 +208,5 @@ export const sectionSageStyle: CSSProperties = {
 
 export const sectionGreenStyle: CSSProperties = {
   padding: "120px 40px",
-  background: COLORS.greenDeep,
+  background: COLORS.text,
 };

@@ -153,9 +153,9 @@ export default function AboutModal({ isOpen, onClose }: Props) {
           marginBottom: "28px",
         }}>
           {[
-            { value: <LocationIcon />, label: "Registered in Geneva, Switzerland" },
-            { value: <UnlockIcon />, label: "Funded by XYZ" },
-            { value: <ShieldIcon />, label: "Committed to Transparency" },
+            { value: <LocationIcon />, label: "Registered in\nSwitzerland" },
+            { value: <UnlockIcon />, label: "Open source development"},
+            { value: <ShieldIcon />, label: "Private by \ndesign" },
           ].map(stat => (
             <div
               key={stat.label}

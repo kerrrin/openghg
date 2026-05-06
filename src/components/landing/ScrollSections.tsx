@@ -1,5 +1,84 @@
 
 "use client";
+import { COLORS } from "@/lib/constants";
+import { useEffect, useRef, useState } from "react";
+
+function CounterTile({
+  target,
+  prefix = "",
+  suffix = "",
+  label,
+  duration = 2000,
+}: {
+  target: number;
+  prefix?: string;
+  suffix?: string;
+  label: React.ReactNode;
+  duration?: number;
+}) {
+  const [count, setCount] = useState(0);
+  const [started, setStarted] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) setStarted(true); },
+      { threshold: 0.3 }
+    );
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!started) return;
+    const steps = 60;
+    const stepDuration = duration / steps;
+    let step = 0;
+    const timer = setInterval(() => {
+      step++;
+      const progress = 1 - Math.pow(1 - step / steps, 3);
+      setCount(Math.round(progress * target));
+      if (step >= steps) clearInterval(timer);
+    }, stepDuration);
+    return () => clearInterval(timer);
+  }, [started, target, duration]);
+
+  return (
+    <div ref={ref} style={{
+      background: "#4F52D8",
+      borderRadius: "8px",
+      minHeight: "250px",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "flex-start",
+      justifyContent: "flex-end",
+      padding: "28px",
+    }}>
+      <span style={{
+        fontFamily: "var(--font-unbounded)",
+        fontWeight: 900,
+        fontSize: "clamp(72px, 9vw, 85px)",
+        lineHeight: 1,
+        letterSpacing: "-2px",
+        color: "#F0F2F5",
+      }}>
+        {prefix}{count.toLocaleString()}{suffix}
+      </span>
+      <span style={{
+        fontFamily: "var(--font-geist-mono)",
+        fontSize: "12px",
+        fontWeight: 500,
+        textTransform: "uppercase",
+        color: "#F0F2F5",
+        marginTop: "12px",
+        lineHeight: 1.5,
+        maxWidth: "220px",
+      }}>
+        {label}
+      </span>
+    </div>
+  );
+}
 
 export default function ScrollSections() {
   return (
@@ -12,20 +91,22 @@ export default function ScrollSections() {
         gridTemplateColumns: "1fr 1fr 1fr",
         gap: "1px",
       }}>
-        {["Tile 1", "Tile 2", "Tile 3"].map(t => (
-          <div key={t} style={{
-            background: "#4F52D8",
-            borderRadius: "8px",
-            minHeight: "350px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}>
-            <span style={{ fontSize: "10px", letterSpacing: "2px", color: "#3D4E68", textTransform: "uppercase" }}>
-              {t}
-            </span>
-          </div>
-        ))}
+        <CounterTile
+          target={15}
+          label={<>Scope 3 categories<br/>covered</>}
+          duration={1200}
+        />
+        <CounterTile
+          target={9500}
+          label={<>Emission factors from<br/>vetted public sources</>}
+          duration={1350}
+        />
+        <CounterTile
+          target={100}
+          suffix="%"
+          label={<>Commitment to transparency<br/>and data ownership</>}
+          duration={1500}
+        />
       </div>
 
       {/* Big white field */}

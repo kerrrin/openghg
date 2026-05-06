@@ -7,7 +7,7 @@ import styles from "./Layout.module.css";
 import { useState } from "react";
 import AuthModal from "@/components/auth/AuthModal";
 import AboutModal from "@/components/landing/AboutModal";
-
+import Estimator from "@/components/landing/Estimator";
 
 // ─────────────────────────────────────────────
 // Styles
@@ -29,9 +29,10 @@ const leftStyle: CSSProperties = {
   background: COLORS.white,
   borderRadius: "8px",  // all corners rounded
   padding: "18px",
+  paddingBottom: "24px", 
   display: "flex",
   flexDirection: "column",
-  justifyContent: "space-between",
+  justifyContent: "center",
   alignItems: "flex-start",
 };
 
@@ -139,13 +140,13 @@ export default function Layout() {
       <div style={leftStyle}>
 
           {/* Landing text — vertically centred */}
-          <div style={{ flex: 1, display: "flex", alignItems: "center" }}>
+          <div style={{ flex: 1, display: "flex", alignItems: "center" }}> 
             <div>
               <h1 style={{
               fontFamily: "var(--font-unbounded)",
               fontWeight: 700,
-              fontSize: "clamp(90px, 3.5vw, 52px)",
-              lineHeight: 1.2,
+              fontSize: "clamp(80px, 3.5vw, 52px)",
+              lineHeight: 1.1,
               letterSpacing: "-1.5px",
               color: COLORS.black,
             }}>
@@ -154,13 +155,61 @@ export default function Layout() {
             <h1 style={{
               fontFamily: "var(--font-unbounded)",
               fontWeight: 700,
-              fontSize: "clamp(90px, 3.5vw, 52px)",
+              fontSize: "clamp(80px, 3.5vw, 52px)",
               lineHeight: 1.05,
               letterSpacing: "-1.5px",
               color:" #4F52D8",
             }}>
               Everyone.
             </h1>
+
+            {/* Compliance badges */}
+            <div style={{ marginTop: "60px" }}>
+              <p style={{
+                fontSize: "14px",
+                fontFamily: "var(--font-unbounded)",
+                fontWeight: 600,
+                color: COLORS.black,
+                opacity: 1,
+                marginBottom: "12px",
+                letterSpacing: "0.02em",
+              }}>
+                Free to use. Compliant with:
+              </p>
+            <div style={{
+              display: "flex",
+              gap: "18px",
+              marginTop: "20px",
+              flexWrap: "wrap", 
+            }}>
+              {[
+                "GHG Protocol",
+                "ISO 14064",
+                "SBTi",
+            ].map((label) => (
+    <div key={label} style={{
+      display: "flex",
+      alignItems: "center",
+      gap: "10px",
+      padding: "6px 12px",
+      borderRadius: "24px",
+      border: "1px solid rgba(0, 0, 0, 0.81)",
+      fontSize: "12px",
+      fontWeight: 500,
+      fontFamily: "var(--font-geist-mono)",
+      color: COLORS.black,
+      opacity: 1,
+    }}>
+      <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+        <circle cx="5" cy="5" r="5" fill="#4F52D8" opacity="0.15"/>
+        <path d="M2.5 5l1.8 1.8 3.2-3.2" stroke="#4F52D8" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+      {label}
+    </div>
+  ))}
+</div> 
+</div>
+
           </div>
         </div>
       </div>
@@ -198,24 +247,13 @@ export default function Layout() {
               setAuthOpen(true);
             }}
           >
-            Calculate
+            Full Inventory
           </a>
         </div>
 
         {/* Estimator */}
         <div style={estimatorStyle}>
-          <p style={estLabelStyle}>Quick estimate</p>
-          <h1 style={estTitleStyle}>
-            How much does your organisation emit?
-          </h1>
-          <p style={estSubStyle}>
-            Enter your revenue for an instant estimate.
-          </p>
-          <div style={estPlaceholderStyle}>
-            <span style={{ fontSize: "11px", color: "#ddd", letterSpacing: "1.5px", textTransform: "uppercase" }}>
-              Estimator — coming soon
-            </span>
-          </div>
+          <Estimator />
         </div>
 
       </div>

@@ -42,3 +42,14 @@
   background: #DCF56A !important;
   color: #0E1520 !important;
 }
+
+@keyframes nudge {
+  0%   { transform: translateX(0); }
+  40%  { transform: translateX(5px); }
+  70%  { transform: translateX(2px); }
+  100% { transform: translateX(0); }
+}
+
+.estimate-btn:hover .arrow {
+  animation: nudge 0.5s ease forwards;
+}
