@@ -1,11 +1,7 @@
 import type { Metadata } from "next";
-import "./globals.css";
 import { Unbounded, Geist, Geist_Mono } from "next/font/google";
 import { AuthProvider } from "@/context/AuthContext";
-
-// ─────────────────────────────────────────────
-// Metadata
-// ─────────────────────────────────────────────
+import "./globals.css";
 
 export const metadata: Metadata = {
   title: "OpenGHG",
@@ -36,10 +32,6 @@ export const metadata: Metadata = {
   },
 };
 
-// ─────────────────────────────────────────────
-// Fonts
-// ─────────────────────────────────────────────
-
 const unbounded = Unbounded({
   subsets: ["latin"],
   weight: ["400", "700", "900"],
@@ -61,22 +53,16 @@ const geistMono = Geist_Mono({
   display: "swap",
 });
 
-// ─────────────────────────────────────────────
-// Root Layout
-// ─────────────────────────────────────────────
+const fonts = `${unbounded.variable} ${geist.variable} ${geistMono.variable}`;
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={`${unbounded.variable} ${geist.variable} ${geistMono.variable} antialiased`}>
-  <AuthProvider>
-    {children}
-  </AuthProvider>
-</body>
+      <body className={`${fonts} antialiased`}>
+        <AuthProvider>
+          {children}
+        </AuthProvider>
+      </body>
     </html>
   );
 }

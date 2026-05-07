@@ -1,115 +1,87 @@
-/**
- * @file styles.ts
- * @description Shared inline style objects for OpenGHG.
- *
- * Font system:
- *   --font-unbounded  → titles, headings, display text
- *   --font-geist      → body, UI, labels, buttons
- *   --font-geist-mono → all quantitative / data / numbers
- *
- * @usage
- * import { inputStyle, labelStyle } from "@/lib/styles"
- */
+// Font system:
+//   --font-unbounded  → headings, display
+//   --font-geist      → body, UI, labels
+//   --font-geist-mono → data, numbers, code
 
 import type { CSSProperties } from "react";
 import { COLORS } from "./constants";
 
-// ─────────────────────────────────────────────
-// Typography — headings (Unbounded)
-// ─────────────────────────────────────────────
+// ── Typography ──
 
-/** Large display heading — Unbounded 900, page titles */
 export const headingStyle: CSSProperties = {
   fontFamily: "var(--font-unbounded)",
   fontWeight: 900,
   fontSize: "52px",
   lineHeight: 1.02,
-  color: COLORS.black,
   letterSpacing: "-2.5px",
+  color: COLORS.black,
   marginBottom: "24px",
 };
 
-/** Mid-size section heading — Unbounded 700 */
 export const subheadingStyle: CSSProperties = {
   fontFamily: "var(--font-unbounded)",
   fontWeight: 700,
   fontSize: "34px",
   lineHeight: 1.08,
-  color: COLORS.black,
   letterSpacing: "-1.5px",
+  color: COLORS.black,
   marginBottom: "16px",
 };
 
-// ─────────────────────────────────────────────
-// Typography — body (Geist)
-// ─────────────────────────────────────────────
-
-/**
- * Eyebrow label — small uppercase text above headings.
- * Geist 500, wide tracking.
- */
 export const eyebrowStyle: CSSProperties = {
-  fontFamily: "var(--font-geist--mono)",
-  fontSize: "11px",
+  fontFamily: "var(--font-geist-mono)",
   fontWeight: 500,
+  fontSize: "11px",
   letterSpacing: "2.5px",
   color: COLORS.text,
   textTransform: "uppercase",
   marginBottom: "24px",
 };
 
-/** Body text — Geist 300, muted */
 export const bodyStyle: CSSProperties = {
-  fontFamily: "var(--font-geist--mono)",
+  fontFamily: "var(--font-geist-mono)",
+  fontWeight: 300,
   fontSize: "15px",
+  lineHeight: 1.75,
   color: COLORS.black,
   opacity: 0.45,
-  lineHeight: 1.75,
-  fontWeight: 300,
 };
 
-/** Small muted text — captions, footnotes */
 export const mutedTextStyle: CSSProperties = {
   fontFamily: "var(--font-geist)",
   fontSize: "13px",
+  lineHeight: 1.6,
   color: COLORS.black,
   opacity: 0.45,
-  lineHeight: 1.6,
 };
 
-// ─────────────────────────────────────────────
-// Typography — data / quantitative (Geist Mono)
-// ─────────────────────────────────────────────
+// ── Data / quantitative ──
 
-/** Large data figure — tCO2e totals, big numbers in results */
 export const dataLargeStyle: CSSProperties = {
   fontFamily: "var(--font-geist-mono)",
   fontWeight: 400,
   fontSize: "40px",
-  color: COLORS.black,
   letterSpacing: "-1px",
   lineHeight: 1,
+  color: COLORS.black,
 };
 
-/** Medium data figure — scope subtotals, table values */
 export const dataMediumStyle: CSSProperties = {
   fontFamily: "var(--font-geist-mono)",
   fontWeight: 400,
   fontSize: "20px",
-  color: COLORS.black,
   lineHeight: 1.2,
+  color: COLORS.black,
 };
 
-/** Small data figure — table cells, legend values */
 export const dataSmallStyle: CSSProperties = {
   fontFamily: "var(--font-geist-mono)",
   fontWeight: 300,
   fontSize: "13px",
-  color: COLORS.black,
   lineHeight: 1.4,
+  color: COLORS.black,
 };
 
-/** Data unit label — "tCO2e", "kWh", "%" etc. */
 export const dataUnitStyle: CSSProperties = {
   fontFamily: "var(--font-geist-mono)",
   fontWeight: 300,
@@ -118,69 +90,59 @@ export const dataUnitStyle: CSSProperties = {
   opacity: 0.4,
 };
 
-// ─────────────────────────────────────────────
-// Form elements
-// ─────────────────────────────────────────────
+// ── Forms ──
 
-/** Standard input / select field */
 export const inputStyle: CSSProperties = {
   width: "100%",
   background: "rgba(0,0,0,0.02)",
-  border: "1px solid rgb(1, 1, 1)",
+  border: "1px solid rgb(1,1,1)",
   borderRadius: "24px",
-  padding: "14px 14px",
+  padding: "12px",
+  fontSize: "12px",
+  fontWeight: 500,
+  fontFamily: "var(--font-geist-mono)",
   color: COLORS.black,
-  fontSize: "14px",
-  fontFamily: "var(--font-geist--mono)",
   outline: "none",
   appearance: "none",
 };
 
-/** Form field label */
 export const labelStyle: CSSProperties = {
+  display: "block",
+  fontFamily: "var(--font-unbounded)",
   fontSize: "12px",
   color: COLORS.black,
   opacity: 0.6,
   marginBottom: "8px",
-  display: "block",
-  fontFamily: "var(--font-unbounded)",
 };
 
-// ─────────────────────────────────────────────
-// Buttons
-// ─────────────────────────────────────────────
+// ── Buttons ──
 
-/** Primary CTA — dark green with electric lime text */
 export const buttonPrimaryStyle: CSSProperties = {
   background: COLORS.text,
-  color: COLORS.greenElectric,
-  padding: "14px 28px",
+  color: COLORS.volt,
+  border: "none",
   borderRadius: "100px",
+  padding: "14px 28px",
   fontSize: "14px",
   fontWeight: 500,
-  border: "none",
-  cursor: "pointer",
   fontFamily: "var(--font-geist)",
+  cursor: "pointer",
 };
 
-/** Secondary button — outlined */
 export const buttonSecondaryStyle: CSSProperties = {
   background: "transparent",
   color: COLORS.black,
-  padding: "14px 28px",
+  border: `0.5px solid ${COLORS.black}`,
   borderRadius: "100px",
+  padding: "14px 28px",
   fontSize: "14px",
   fontWeight: 500,
-  border: `0.5px solid ${COLORS.black}`,
-  cursor: "pointer",
   fontFamily: "var(--font-geist)",
+  cursor: "pointer",
 };
 
-// ─────────────────────────────────────────────
-// Cards
-// ─────────────────────────────────────────────
+// ── Cards ──
 
-/** Standard content card */
 export const cardStyle: CSSProperties = {
   background: COLORS.white,
   borderRadius: "16px",
@@ -188,25 +150,11 @@ export const cardStyle: CSSProperties = {
   padding: "32px",
 };
 
-// ─────────────────────────────────────────────
-// Section containers
-// ─────────────────────────────────────────────
+// ── Sections ──
 
-export const sectionStyle: CSSProperties = {
-  padding: "120px 40px",
-};
+const sectionBase: CSSProperties = { padding: "120px 40px" };
 
-export const sectionDarkStyle: CSSProperties = {
-  padding: "120px 40px",
-  background: COLORS.black,
-};
-
-export const sectionSageStyle: CSSProperties = {
-  padding: "120px 40px",
-  background: COLORS.sage,
-};
-
-export const sectionGreenStyle: CSSProperties = {
-  padding: "120px 40px",
-  background: COLORS.text,
-};
+export const sectionStyle:      CSSProperties = { ...sectionBase };
+export const sectionDarkStyle:  CSSProperties = { ...sectionBase, background: COLORS.black };
+export const sectionSageStyle:  CSSProperties = { ...sectionBase, background: COLORS.sage };
+export const sectionGreenStyle: CSSProperties = { ...sectionBase, background: COLORS.text };

@@ -5,48 +5,47 @@
 }
 
 :root {
+  /* surface */
+  --color-text:       #0E1520;
+  --color-page:       #F0F2F5;
+  --color-base:       #1C2432;
+  --color-text-muted: #8A9AB8;
+  --color-border:     #3D4E68;
 
-  /* ── Primary ── */
-  --color-text:         #0E1520;   
-  --color-page:         #F0F2F5;   
-  --color-base:         #1C2432;   
-  --color-text-muted:   #8A9AB8;   
-  --color-border:       #3D4E68;   
+  /* accent */
+  --color-volt:       #C8F135;
+  --color-volt-light: #DCF56A;
+  --color-volt-tint:  #EEF9B0;
 
-  /* ── Secondary ── */
-  --color-volt:         #C8F135;   
-  --color-volt-light:   #DCF56A;   
-  --color-volt-tint:    #EEF9B0;   
+  /* scopes */
+  --color-scope1:     #1E2060;
+  --color-scope2:     #818CF8;
+  --color-scope3:     #DCF56A;
 
-  /* ── Scope colours ── */
-  --color-scope1:       #1E2060;   
-  --color-scope2:       #818CF8;   
-  --color-scope3:       #DCF56A;   
+  /* status */
+  --color-warning:    #ff8147;
+  --color-danger:     #E82E48;
+  --color-rose:       #ffc3f3;
 
-  /* ── Tertiary ── */
-  --color-warning:      #ff8147;   
-  --color-danger:       #E82E48;   
+  /* aliases */
+  --black: #0E1520;
+  --white: #f0f2f5;
 
-  /* ── Legacy colours ── */
-  --green-electric: #C8F135;
-  --black:          #0E1520;
-  --magenta:        #B04F9D;
-  --sage:           #D4E0D8;
-  --slate:          #8A9EAA;
-  --lavender:       #C4A0D4;
-  --red:            #E82E57;
-  --white:          #f0f2f5;
-
-  --font-heading:   var(--font-unbounded);
-  --font-body:      var(--font-geist);
-  --font-mono:      var(--font-geist-mono);
+  /* typography */
+  --font-heading: var(--font-unbounded);
+  --font-body:    var(--font-geist-mono);
+  --font-mono:    var(--font-geist-mono);
 }
 
 html {
-  font-family: var(--font-geist), sans-serif;
+  font-family: var(--font-geist-mono), sans-serif;
   color: var(--black);
   background: var(--white);
   -webkit-font-smoothing: antialiased;
+}
+
+body {
+  font-family: var(--font-geist-mono), sans-serif;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -54,34 +53,22 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: 700;
 }
 
-body {
-  font-family: var(--font-geist), sans-serif;
-}
-
 a {
   color: inherit;
   text-decoration: none;
-  font-family: var(--font-geist-mono), sans-serif;
 }
 
 button {
   cursor: pointer;
-  font-family: var(--font-geist-mono), sans-serif;
 }
 
-input, select, textarea {
-  font-family: var(--font-geist), sans-serif;
+a, button, input, select, textarea {
+  font-family: inherit;
 }
 
 @keyframes fadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .fade-up {

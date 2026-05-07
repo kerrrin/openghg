@@ -2,54 +2,30 @@
   display: inline-flex;
   align-items: center;
   padding: 5px 14px;
-  border: 1px solid #0E1520 !important;
-  border-radius: 100px !important;
+  border: 1px solid var(--color-text);
+  border-radius: 100px;
   cursor: pointer;
-  text-decoration: none !important;
+  text-decoration: none;
   font-size: 12px;
   font-weight: 500;
-  color: #0E1520 !important;
+  color: var(--color-text);
   font-family: var(--font-geist-mono);
   white-space: nowrap;
-  background: transparent !important;
+  background: transparent;
   transition: background 0.15s, color 0.15s;
 }
 
 .navItem:hover {
-  background: #0E1520 !important;
-  color: #F0F2F5 !important;
+  background: var(--color-text);
+  color: var(--color-page);
 }
 
 .navItemLogin {
-  display: inline-flex;
-  align-items: center;
-  padding: 5px 14px;
-  border: 1px solid #0E1520 !important;
-  border-radius: 100px !important;
-  cursor: pointer;
-  text-decoration: none !important;
-  font-size: 12px;
-  font-weight: 500;
-  color: #0E1520 !important;
-  font-family: var(--font-geist-mono);
-  white-space: nowrap;
-  background: transparent !important;
-  transition: background 0.15s, color 0.15s;
+  composes: navItem;
   margin-left: auto;
 }
 
 .navItemLogin:hover {
-  background: #DCF56A !important;
-  color: #0E1520 !important;
-}
-
-@keyframes nudge {
-  0%   { transform: translateX(0); }
-  40%  { transform: translateX(5px); }
-  70%  { transform: translateX(2px); }
-  100% { transform: translateX(0); }
-}
-
-.estimate-btn:hover .arrow {
-  animation: nudge 0.5s ease forwards;
+  background: var(--color-volt-light);
+  color: var(--color-text);
 }

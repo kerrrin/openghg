@@ -1,15 +1,13 @@
-
 "use client";
 
+import type { CSSProperties } from "react";
 import { useState, useEffect } from "react";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 import { createClient } from "@/lib/supabase/client";
 import { COLORS, SCOPE_COLORS } from "@/lib/constants";
 import { inputStyle, labelStyle } from "@/lib/styles";
 
-// ─────────────────────────────────────────────
-// Types
-// ─────────────────────────────────────────────
+// ── Types ──
 
 type Benchmark = {
   scope1_avg: number;
@@ -50,251 +48,99 @@ type Currency = {
 
 type View = "input" | "result";
 
-// ─────────────────────────────────────────────
-// Constants
-// ─────────────────────────────────────────────
+// ── Constants ──
 
 const REPORTING_YEAR = 2025;
 
-// ─────────────────────────────────────────────
-// Component
-// ─────────────────────────────────────────────
+const SCOPES = [
+  { label: "Scope 1: Operations",       key: "scope1" as const },
+  { label: "Scope 2: Purchased Energy", key: "scope2" as const },
+  { label: "Scope 3: Value Chain",      key: "scope3" as const },
+];
 
-export default function Estimator() {
-  const supabase = createClient();
+// ── Helpers ──
 
-  // ── State ──
-  const [view,          setView]          = useState<View>("input");
-  const [sectors,       setSectors]       = useState<Sector[]>([]);
-  const [regions,       setRegions]       = useState<Region[]>([]);
-  const [revenue,       setRevenue]       = useState<string>("");
-  const [currency,      setCurrency]      = useState<string>("EUR");
-  const [sectorCode,    setSectorCode]    = useState<string>("");
-  const [regionCode,    setRegionCode]    = useState<string>("");
-  const [result,        setResult]        = useState<EstimateResult | null>(null);
-  const [benchmark,     setBenchmark]     = useState<Benchmark | null>(null);
-  const [loading,       setLoading]       = useState<boolean>(false);
-  const [error,         setError]         = useState<string | null>(null);
-  const [dataLoading,   setDataLoading]   = useState<boolean>(true);
-  const [currencies,    setCurrencies]    = useState<Currency[]>([]);
-  const [displayTotal,  setDisplayTotal]  = useState<number>(0);
-  const [showDQ,        setShowDQ]        = useState(false);
-  const [hovered,       setHovered]       = useState(false);
+const round1 = (n: number) => Math.round(n * 10) / 10;
+const easeOut = (t: number) => 1 - Math.pow(1 - t, 5);
 
-  // ── Load sectors and regions on mount ──
-  useEffect(() => {
-    async function loadReferenceData() {
-      setDataLoading(true);
+// ── Styles ──
 
-      const [sectorsRes, regionsRes, currenciesRes] = await Promise.all([
-        supabase
-          .from("sectors")
-          .select("sector_code, display_name_en, sector_group")
-          .order("sector_group")
-          .order("display_order"),
-        supabase
-          .from("regions")
-          .select("region_code, display_name_en, region_group")
-          .order("region_group")
-          .order("display_order"),
-        supabase
-            .from("units")
-            .select("unit_code, display_name_en")
-            .eq("unit_type", "currency")
-            .eq("reporting_year", 2025)
-            .order("display_order"),
-      ]);
-
-      if (sectorsRes.data) setSectors(sectorsRes.data);
-      if (regionsRes.data) setRegions(regionsRes.data);
-      if (currenciesRes.data) setCurrencies(currenciesRes.data);
-      setDataLoading(false);
-    }
-
-    loadReferenceData();
-  }, []);
-
-  const sectorsByGroup = sectors.reduce<Record<string, Sector[]>>((acc, s) => {
-    if (!acc[s.sector_group]) acc[s.sector_group] = [];
-    acc[s.sector_group].push(s);
-    return acc;
-  }, {});
-
-  const regionsByGroup = regions.reduce<Record<string, Region[]>>((acc, r) => {
-    if (!acc[r.region_group]) acc[r.region_group] = [];
-    acc[r.region_group].push(r);
-    return acc;
-  }, {});
-
-  const CURRENCIES = [
-    "eur", "gbp", "usd", "chf",
-    "aud", "cad", "jpy", "cny",
-    "inr", "brl", "krw", "mxn",
-    "nok", "sek", "zar", "try",
-    "idr", "nzd", "rub", "dkk",
-    "ron", "pln", "bgn", "czk",
-  ];
-
-  /**
-   * Converts revenue to EUR using units table exchange rates.
-   * Falls back to 1.0 if currency is EUR or rate not found.
-   */
-  async function convertToEUR(amount: number, currency: string): Promise<number> {
-    if (currency === "EUR") return amount;
-
-    const { data, error } = await supabase
-      .from("units")
-      .select("conversion_factor")
-      .eq("unit_code", currency)
-      .eq("reporting_year", REPORTING_YEAR)
-      .single();
-
-    if (error || !data) {
-      console.warn(`[Estimator] no exchange rate for ${currency} — using 1.0`);
-      return amount;
-    }
-
-    return amount * (data as Unit).conversion_factor;
-  }
-
-  /**
-   * Main estimate function.
-   * 1. Convert revenue to EUR
-   * 2. Fetch benchmark for sector + region
-   * 3. Calculate scope totals
-   * 4. Set result state
-   */
-  async function handleEstimate() {
-    const rev = parseFloat(revenue);
-
-    if (!rev || rev <= 0) {
-      setError("Please enter a valid revenue amount.");
-      return;
-    }
-    if (!sectorCode) {
-      setError("Please select a sector.");
-      return;
-    }
-    if (!regionCode) {
-      setError("Please select a region.");
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-    setResult(null);
-    setBenchmark(null);
-
-    // Step 1 — convert revenue to EUR
-    const revenueEUR = await convertToEUR(rev, currency);
-
-    // Step 2 — fetch benchmark
-    const { data: benchmarkData, error: benchmarkError } = await supabase
-      .from("sector_benchmarks")
-      .select("scope1_avg, scope2_avg, scope3_avg, total_avg, source")
-      .eq("sector_code", sectorCode)
-      .eq("region_code", regionCode)
-      .eq("reporting_year", REPORTING_YEAR)
-      .single();
-
-    if (benchmarkError || !benchmarkData) {
-      // Try global average as fallback
-      const { data: globalData } = await supabase
-        .from("sector_benchmarks")
-        .select("scope1_avg, scope2_avg, scope3_avg, total_avg, source")
-        .eq("sector_code", sectorCode)
-        .eq("region_code", "GLOBAL")
-        .eq("reporting_year", REPORTING_YEAR)
-        .single();
-
-      if (!globalData) {
-        setError("No benchmark data available for this sector and region combination.");
-        setLoading(false);
-        return;
-      }
-
-      setBenchmark(globalData as Benchmark);
-      calculateResult(revenueEUR, globalData as Benchmark);
-    } else {
-      setBenchmark(benchmarkData as Benchmark);
-      calculateResult(revenueEUR, benchmarkData as Benchmark);
-    }
-
-    setLoading(false);
-    setView("result");
-  }
-
-  function calculateResult(revenueEUR: number, b: Benchmark) {
-    // Round to 1 decimal place
-    const round = (n: number) => Math.round(n * 10) / 10;
-
-    setResult({
-      total:  round(revenueEUR * b.total_avg),
-      scope1: round(revenueEUR * b.scope1_avg),
-      scope2: round(revenueEUR * b.scope2_avg),
-      scope3: round(revenueEUR * b.scope3_avg),
-    });
-  }
-
-  // ── Chart data ──
-  const chartData = result ? [
-    { name: "Scope 1", value: result.scope1 },
-    { name: "Scope 2", value: result.scope2 },
-    { name: "Scope 3", value: result.scope3 },
-  ] : [];
-    
-  useEffect(() => {
-  if (!result) return;
-
-  const duration = 900; // ms
-  const steps = 60;
-  let step = 0;
-  function easeOut(t: number): number {
-    return 1 - Math.pow(1 - t, 5);
-  }
-
-  const timer = setInterval(() => {
-    step++;
-    const progress = step / steps;
-    const easedProgress = easeOut(progress);
-
-   if (step >= steps) {
-      setDisplayTotal(result.total);
-      clearInterval(timer);
-    } else {
-      setDisplayTotal(
-        Math.round(easedProgress * result.total * 10) / 10
-      );
-    }
-  }, duration / steps);
-
-  return () => clearInterval(timer);
-}, [result]);
-
-// ─────────────────────────────────────────────
-// Styles
-// ─────────────────────────────────────────────
-
-const sectionStyle: React.CSSProperties = {
+const section: CSSProperties = {
   padding: "12px",
-  paddingTop: "35px",
+  paddingTop: "100px",
   height: "100%",
   display: "flex",
   flexDirection: "column",
 };
 
-const widgetLabelStyle: React.CSSProperties = {
+const widgetLabel: CSSProperties = {
   fontSize: "32px",
   fontWeight: 600,
   letterSpacing: "-1px",
   color: COLORS.black,
   marginBottom: "20px",
-  opacity: 1,
   fontFamily: "var(--font-unbounded)",
 };
 
-const resultLabelStyle: React.CSSProperties = {
+const subtitle: CSSProperties = {
+  fontFamily: "var(--font-geist-mono)",
+  fontWeight: 500,
+  fontSize: "13px",
+  color: COLORS.text,
+  marginBottom: "5px",
+};
+
+const poweredBy: CSSProperties = {
+  fontSize: "13px",
+  fontWeight: 500,
+  color: COLORS.black,
+  fontFamily: "var(--font-geist-mono)",
+};
+
+const twoColGrid: CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "1fr 1fr",
+  gap: "12px",
+};
+
+const errorText: CSSProperties = {
   fontSize: "12px",
+  color: COLORS.danger,
+  fontFamily: "var(--font-geist-mono)",
+  marginBottom: "16px",
+};
+
+const estimateBtn: CSSProperties = {
+  width: "100%",
+  background: COLORS.text,
+  color: COLORS.volt,
+  border: "none",
+  borderRadius: "48px",
+  padding: "18px",
+  fontSize: "16px",
+  fontWeight: 600,
+  fontFamily: "var(--font-unbounded)",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: "8px",
+};
+
+const backBtn: CSSProperties = {
+  background: "none",
+  border: "none",
+  color: COLORS.black,
+  fontSize: "13px",
+  fontWeight: 500,
+  fontFamily: "var(--font-geist-mono)",
+  cursor: "pointer",
+  textAlign: "left",
+  padding: "0",
+  marginBottom: "20px",
+};
+
+const resultLabel: CSSProperties = {
+  fontSize: "13px",
   color: COLORS.black,
   opacity: 0.6,
   letterSpacing: "1.5px",
@@ -303,7 +149,7 @@ const resultLabelStyle: React.CSSProperties = {
   fontFamily: "var(--font-geist-mono)",
 };
 
-const totalValueStyle: React.CSSProperties = {
+const totalValue: CSSProperties = {
   fontFamily: "var(--font-unbounded)",
   fontWeight: 900,
   fontSize: "40px",
@@ -312,21 +158,35 @@ const totalValueStyle: React.CSSProperties = {
   lineHeight: 1,
 };
 
-const totalUnitStyle: React.CSSProperties = {
+const totalUnit: CSSProperties = {
   fontSize: "13px",
   color: COLORS.black,
   opacity: 0.6,
   fontFamily: "var(--font-geist-mono)",
 };
 
-const disclaimerStyle: React.CSSProperties = {
+const scopeLabel: CSSProperties = {
+  fontSize: "11px",
+  color: COLORS.black,
+  opacity: 0.6,
+  fontFamily: "var(--font-unbounded)",
+};
+
+const scopeValue: CSSProperties = {
+  fontFamily: "var(--font-geist-mono)",
+  fontSize: "12px",
+  fontWeight: 500,
+  color: COLORS.text,
+};
+
+const disclaimerBox: CSSProperties = {
   background: "rgba(0,0,0,0.07)",
   borderRadius: "8px",
   padding: "14px 16px",
   marginBottom: "8px",
 };
 
-const disclaimerTitleStyle: React.CSSProperties = {
+const disclaimerTitle: CSSProperties = {
   fontFamily: "var(--font-geist-mono)",
   fontSize: "14px",
   fontWeight: 500,
@@ -335,7 +195,7 @@ const disclaimerTitleStyle: React.CSSProperties = {
   marginBottom: "8px",
 };
 
-const disclaimerBodyStyle: React.CSSProperties = {
+const disclaimerBody: CSSProperties = {
   fontFamily: "var(--font-geist-mono)",
   fontSize: "12px",
   color: COLORS.black,
@@ -344,371 +204,329 @@ const disclaimerBodyStyle: React.CSSProperties = {
   marginBottom: "8px",
 };
 
-  // ─────────────────────────────────────────────
-  // Render
-  // ─────────────────────────────────────────────
+const tooltipTrigger: CSSProperties = {
+  width: "14px",
+  height: "14px",
+  borderRadius: "50%",
+  border: "1px solid currentColor",
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  fontSize: "10px",
+  cursor: "help",
+  opacity: 0.6,
+};
+
+const tooltipBubble: CSSProperties = {
+  position: "absolute",
+  bottom: "120%",
+  left: "50%",
+  transform: "translateX(-50%)",
+  background: "#1a1a1a",
+  color: "#fff",
+  borderRadius: "6px",
+  padding: "8px 10px",
+  fontSize: "11px",
+  lineHeight: 1.5,
+  whiteSpace: "nowrap",
+  pointerEvents: "none",
+  zIndex: 10,
+};
+
+// ── Supabase client ──
+
+const supabase = createClient();
+
+// ── Component ──
+
+export default function Estimator() {
+  const [view,         setView]         = useState<View>("input");
+  const [sectors,      setSectors]      = useState<Sector[]>([]);
+  const [regions,      setRegions]      = useState<Region[]>([]);
+  const [currencies,   setCurrencies]   = useState<Currency[]>([]);
+  const [revenue,      setRevenue]      = useState("");
+  const [currency,     setCurrency]     = useState("EUR");
+  const [sectorCode,   setSectorCode]   = useState("");
+  const [regionCode,   setRegionCode]   = useState("");
+  const [result,       setResult]       = useState<EstimateResult | null>(null);
+  const [benchmark,    setBenchmark]    = useState<Benchmark | null>(null);
+  const [loading,      setLoading]      = useState(false);
+  const [dataLoading,  setDataLoading]  = useState(true);
+  const [error,        setError]        = useState<string | null>(null);
+  const [displayTotal, setDisplayTotal] = useState(0);
+  const [showDQ,       setShowDQ]       = useState(false);
+  const [hovered,      setHovered]      = useState(false);
+
+  useEffect(() => {
+    async function loadReferenceData() {
+      const [sectorsRes, regionsRes, currenciesRes] = await Promise.all([
+        supabase.from("sectors").select("sector_code, display_name_en, sector_group").order("sector_group").order("display_order"),
+        supabase.from("regions").select("region_code, display_name_en, region_group").order("region_group").order("display_order"),
+        supabase.from("units").select("unit_code, display_name_en").eq("unit_type", "currency").eq("reporting_year", REPORTING_YEAR).order("display_order"),
+      ]);
+      if (sectorsRes.data)    setSectors(sectorsRes.data);
+      if (regionsRes.data)    setRegions(regionsRes.data);
+      if (currenciesRes.data) setCurrencies(currenciesRes.data);
+      setDataLoading(false);
+    }
+    loadReferenceData();
+  }, []);
+
+  useEffect(() => {
+    if (!result) return;
+    const steps = 60;
+    let step = 0;
+    const timer = setInterval(() => {
+      step++;
+      if (step >= steps) {
+        setDisplayTotal(result.total);
+        clearInterval(timer);
+      } else {
+        setDisplayTotal(round1(easeOut(step / steps) * result.total));
+      }
+    }, 900 / steps);
+    return () => clearInterval(timer);
+  }, [result]);
+
+  const sectorsByGroup = sectors.reduce<Record<string, Sector[]>>((acc, s) => {
+    (acc[s.sector_group] ??= []).push(s);
+    return acc;
+  }, {});
+
+  const regionsByGroup = regions.reduce<Record<string, Region[]>>((acc, r) => {
+    (acc[r.region_group] ??= []).push(r);
+    return acc;
+  }, {});
+
+  async function convertToEUR(amount: number, currencyCode: string): Promise<number> {
+    if (currencyCode === "EUR") return amount;
+    const { data } = await supabase
+      .from("units")
+      .select("conversion_factor")
+      .eq("unit_code", currencyCode)
+      .eq("reporting_year", REPORTING_YEAR)
+      .single();
+    return data ? amount * (data as Unit).conversion_factor : amount;
+  }
+
+  async function handleEstimate() {
+    const rev = parseFloat(revenue);
+    if (!rev || rev <= 0) return setError("Please enter a valid revenue amount.");
+    if (!sectorCode)      return setError("Please select a sector.");
+    if (!regionCode)      return setError("Please select a region.");
+
+    setLoading(true);
+    setError(null);
+    setResult(null);
+    setBenchmark(null);
+
+    const revenueEUR = await convertToEUR(rev, currency);
+
+    const fetchBenchmark = (regionOverride: string) =>
+      supabase
+        .from("sector_benchmarks")
+        .select("scope1_avg, scope2_avg, scope3_avg, total_avg, source")
+        .eq("sector_code", sectorCode)
+        .eq("region_code", regionOverride)
+        .eq("reporting_year", REPORTING_YEAR)
+        .single();
+
+    let { data: bm } = await fetchBenchmark(regionCode);
+    if (!bm) ({ data: bm } = await fetchBenchmark("GLOBAL"));
+
+    if (!bm) {
+      setError("No benchmark data available for this sector and region combination.");
+      setLoading(false);
+      return;
+    }
+
+    const b = bm as Benchmark;
+    setBenchmark(b);
+    setResult({
+      total:  round1(revenueEUR * b.total_avg),
+      scope1: round1(revenueEUR * b.scope1_avg),
+      scope2: round1(revenueEUR * b.scope2_avg),
+      scope3: round1(revenueEUR * b.scope3_avg),
+    });
+    setLoading(false);
+    setView("result");
+  }
+
+  const chartData = result
+    ? SCOPES.map(({ label, key }) => ({ name: label.split(":")[0], value: result[key] }))
+    : [];
 
   return (
-  <div style={sectionStyle}>
+    <div style={section}>
+      {dataLoading ? (
+        <p style={{ fontSize: "12px", color: COLORS.textMuted, fontFamily: "var(--font-geist-mono)" }}>
+          Loading data...
+        </p>
+      ) : view === "input" ? (
 
-    {dataLoading ? (
-      <p style={{
-        fontSize: "12px",
-        color: COLORS.textMuted,
-        fontFamily: "var(--font-geist-mono)",
-      }}>
-        Loading data...
-      </p>
-    ) : view === "input" ? (
+        <div className="fade-up" style={{ display: "flex", flexDirection: "column" }}>
+          <div style={{ marginBottom: "50px" }}>
+            <p style={widgetLabel}>Estimate Your Footprint.</p>
+            <h2 style={subtitle}>Full-scope GHG modelling based on sector, region, and annual revenue.</h2>
+            <p style={poweredBy}>Powered by Exiobase 3 EEIO data.</p>
+          </div>
 
-      /* ── Input view ── */
-     <div className="fade-up" style={{ display: "flex", flexDirection: "column" }}>
+          <div style={{ ...twoColGrid, marginBottom: "30px" }}>
+            <div>
+              <label style={labelStyle}>Revenue</label>
+              <input
+                type="number"
+                placeholder="5,000,000"
+                value={revenue}
+                onChange={e => setRevenue(e.target.value)}
+                style={inputStyle}
+                aria-label="Revenue"
+              />
+            </div>
+            <div>
+              <label style={labelStyle}>Currency</label>
+              <select value={currency} onChange={e => setCurrency(e.target.value)} style={inputStyle} aria-label="Currency">
+                {currencies.map(c => (
+                  <option key={c.unit_code} value={c.unit_code}>{c.display_name_en}</option>
+                ))}
+              </select>
+            </div>
+          </div>
 
-        <div style={{ marginBottom: "40px" }}>
-          <p style={widgetLabelStyle}>Estimate Your Footprint.</p>
-          <h2 style={{
-            fontFamily: "var(--font-unbounded)",
-            fontWeight: 600,
-            fontSize: "14px",
-            color: COLORS.text,
-            letterSpacing: "-0.px",
-            marginBottom: "16px",
-          }}>
-            Open source GHG modelling based on sector, region, and annual revenue.
-          </h2>
-          <p style={{
-            fontSize: "12px",
-            fontWeight: 500,
-            color: COLORS.black,
-            opacity: 0.6,
-            fontFamily: "var(--font-geist-mono)",
-          }}>
-            Powered by Exiobase 3 EEIO data.
-          </p>
+          <div style={{ ...twoColGrid, marginBottom: "50px" }}>
+            <div>
+              <label style={labelStyle}>Sector</label>
+              <select value={sectorCode} onChange={e => setSectorCode(e.target.value)} style={inputStyle} aria-label="Sector">
+                <option value="">Select sector</option>
+                {Object.entries(sectorsByGroup).map(([group, items]) => (
+                  <optgroup key={group} label={group}>
+                    {items.map(s => <option key={s.sector_code} value={s.sector_code}>{s.display_name_en}</option>)}
+                  </optgroup>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label style={labelStyle}>Region</label>
+              <select value={regionCode} onChange={e => setRegionCode(e.target.value)} style={inputStyle} aria-label="Region">
+                <option value="">Select region</option>
+                {Object.entries(regionsByGroup).map(([group, items]) => (
+                  <optgroup key={group} label={group}>
+                    {items.map(r => <option key={r.region_code} value={r.region_code}>{r.display_name_en}</option>)}
+                  </optgroup>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {error && <p style={errorText}>{error}</p>}
+
+          <button
+            onClick={handleEstimate}
+            disabled={loading}
+            onMouseEnter={() => setHovered(true)}
+            onMouseLeave={() => setHovered(false)}
+            style={{ ...estimateBtn, cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.6 : 1 }}
+            aria-label="Calculate emission estimate"
+          >
+            {loading ? "Calculating..." : (
+              <>
+                Estimate
+                <span style={{ display: "inline-block", transition: "transform 0.2s ease", transform: hovered ? "translateX(5px)" : "translateX(0)" }}>
+                  →
+                </span>
+              </>
+            )}
+          </button>
         </div>
 
-        {/* Revenue + currency */}
-        <div style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: "12px",
-          marginBottom: "30px",
-        }}>
-          <div>
-            <label style={labelStyle}>Revenue</label>
-            <input
-              type="number"
-              placeholder="5,000,000"
-              value={revenue}
-              onChange={e => setRevenue(e.target.value)}
-              style={inputStyle}
-              aria-label="Revenue"
-            />
-          </div>
-          <div>
-            <label style={labelStyle}>Currency</label>
-            <select
-              value={currency}
-              onChange={e => setCurrency(e.target.value)}
-              style={inputStyle}
-              aria-label="Currency"
-            >
-              {currencies.map(c => (
-                <option key={c.unit_code} value={c.unit_code}>
-                  {c.display_name_en}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
+      ) : (
 
-        {/* Sector + region */}
-        <div style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: "12px",
-          marginBottom: "50px",
-        }}>
-          <div>
-            <label style={labelStyle}>Sector</label>
-            <select
-              value={sectorCode}
-              onChange={e => setSectorCode(e.target.value)}
-              style={inputStyle}
-              aria-label="Sector"
-            >
-              <option value="">Select sector</option>
-              {Object.entries(sectorsByGroup).map(([group, items]) => (
-                <optgroup key={group} label={group}>
-                  {items.map(s => (
-                    <option key={s.sector_code} value={s.sector_code}>
-                      {s.display_name_en}
-                    </option>
-                  ))}
-                </optgroup>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label style={labelStyle}>Region</label>
-            <select
-              value={regionCode}
-              onChange={e => setRegionCode(e.target.value)}
-              style={inputStyle}
-              aria-label="Region"
-            >
-              <option value="">Select region</option>
-              {Object.entries(regionsByGroup).map(([group, items]) => (
-                <optgroup key={group} label={group}>
-                  {items.map(r => (
-                    <option key={r.region_code} value={r.region_code}>
-                      {r.display_name_en}
-                    </option>
-                  ))}
-                </optgroup>
-              ))}
-            </select>
-          </div>
-        </div>
+        <div className="fade-up" style={{ display: "flex", flexDirection: "column", marginTop: "-24px" }}>
+          <button
+            onClick={() => { setView("input"); setResult(null); setBenchmark(null); }}
+            style={backBtn}
+          >
+            ← Recalculate
+          </button>
 
-        {/* Error */}
-        {error && (
-          <p style={{
-            fontSize: "12px",
-            color: COLORS.danger,
-            fontFamily: "var(--font-geist-mono)",
-            marginBottom: "16px",
-          }}>
-            {error}
-          </p>
-        )}
-
-        {/* Button */}
-        <button
-          onClick={handleEstimate}
-          disabled={loading}
-          onMouseEnter={() => setHovered(true)}
-          onMouseLeave={() => setHovered(false)}
-          style={{
-            width: "100%",
-            background: COLORS.text,
-            color: COLORS.volt,
-            border: "none",
-            borderRadius: "48px",
-            padding: "18px",
-            fontSize: "16px",
-            fontWeight: 600,
-            cursor: loading ? "not-allowed" : "pointer",
-            fontFamily: "var(--font-unbounded)",
-            opacity: loading ? 0.6 : 1,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "8px",
-          }}
-          aria-label="Calculate emission estimate"
-        >
-          {loading ? "Calculating..." : (
+          {result && benchmark && (
             <>
-                Estimate 
-                <span style={{
-                display: "inline-block",
-                transition: "transform 0.2s ease",
-                transform: hovered ? "translateX(5px)" : "translateX(0)",
-            }}>→</span>
+              <p style={resultLabel}>Estimated total</p>
+              <div style={{ display: "flex", alignItems: "baseline", gap: "6px", marginBottom: "16px" }}>
+                <span style={totalValue}>{displayTotal.toLocaleString()}</span>
+                <span style={totalUnit}>tCO₂e / year</span>
+              </div>
+
+              <div style={{ width: "100%", height: "160px" }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={chartData} cx="50%" cy="50%" innerRadius={44} outerRadius={70} paddingAngle={2} dataKey="value">
+                      {chartData.map((_, i) => <Cell key={i} fill={SCOPE_COLORS[i]} />)}
+                    </Pie>
+                    <Tooltip
+                      formatter={(value, name) =>
+                        value != null ? [`${Number(value).toLocaleString()} tCO₂e`, name] : ["", name]
+                      }
+                      contentStyle={{
+                        background: COLORS.white,
+                        border: "1px solid rgba(0,0,0,0.81)",
+                        borderRadius: "24px",
+                        color: COLORS.black,
+                        fontSize: "12px",
+                        fontFamily: "var(--font-geist-mono)",
+                        padding: "2px 8px",
+                      }}
+                      itemStyle={{ color: COLORS.black }}
+                      labelStyle={{ color: COLORS.black }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginBottom: "16px" }}>
+                {SCOPES.map(({ label, key }, i) => (
+                  <div key={key} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: SCOPE_COLORS[i], flexShrink: 0 }} />
+                      <span style={scopeLabel}>{label}</span>
+                    </div>
+                    <span style={scopeValue}>{result[key].toLocaleString()} tCO₂e</span>
+                  </div>
+                ))}
+              </div>
+
+              <div style={disclaimerBox}>
+                <p style={disclaimerTitle}>Indicative Estimate</p>
+                <p style={disclaimerBody}>
+                  Uses sector-average EEIO emission intensities as a proxy.
+                  Your organisation's actual emissions may differ significantly.
+                </p>
+                <p style={{ ...disclaimerBody, marginBottom: "8px" }}>
+                  <strong>Source:</strong>{" "}
+                  {benchmark.source ?? "Exiobase 3.8, own calculations"} · GWP: IPCC AR6 · {REPORTING_YEAR}
+                </p>
+                <p style={{ ...disclaimerBody, marginBottom: 0, display: "flex", alignItems: "center", gap: "6px" }}>
+                  <strong>Data Quality Score:</strong> 3
+                  <span
+                    style={{ position: "relative", display: "inline-flex" }}
+                    onMouseEnter={() => setShowDQ(true)}
+                    onMouseLeave={() => setShowDQ(false)}
+                  >
+                    <span style={tooltipTrigger}>i</span>
+                    {showDQ && (
+                      <span style={tooltipBubble}>
+                        <strong>1 — High:</strong> Directly measured and verified<br />
+                        <strong>2 — Medium:</strong> Based on activity data combined with industry averages<br />
+                        <strong>3 — Low:</strong> Derived from broad averages or proxies
+                      </span>
+                    )}
+                  </span>
+                </p>
+              </div>
             </>
           )}
-        </button>
-
-      </div>
-
-    ) : (
-
-      /* ── Result view ── */
-      <div className="fade-up" style={{ display: "flex", flexDirection: "column" }}>
-
-        {/* Back button */}
-        <button
-          onClick={() => {
-            setView("input");
-            setResult(null);
-            setBenchmark(null);
-          }}
-          style={{
-            background: "none",
-            border: "none",
-            color: COLORS.black,
-            opacity: 0.6,
-            fontSize: "14px",
-            fontFamily: "var(--font-geist-mono)",
-            cursor: "pointer",
-            textAlign: "left",
-            padding: "0",
-            marginBottom: "20px",
-          }}
-        >
-          ← Recalculate
-        </button>
-
-        {result && benchmark && (
-          <>
-            {/* Total */}
-            <p style={resultLabelStyle}>Estimated total</p>
-            <div style={{
-              display: "flex",
-              alignItems: "baseline",
-              gap: "6px",
-              marginBottom: "16px",
-            }}>
-              <span style={totalValueStyle}>
-                {displayTotal.toLocaleString()}
-              </span>
-              <span style={totalUnitStyle}>tCO₂e / year</span>
-            </div>
-
-            {/* Donut chart */}
-            <div style={{ width: "100%", height: "160px" }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={chartData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={44}
-                    outerRadius={70}
-                    paddingAngle={2}
-                    dataKey="value"
-                  >
-                    {chartData.map((_, index) => (
-                      <Cell
-                        key={`scope-${index}`}
-                        fill={SCOPE_COLORS[index]}
-                      />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    formatter={(value, name) =>
-                      value != null
-                        ? [`${Number(value).toLocaleString()} tCO₂e`, name]
-                        : ["", ""]
-                    }
-                    contentStyle={{
-                      background: COLORS.text,
-                      border: "none",
-                      borderRadius: "8px",
-                      color: COLORS.volt,
-                      fontSize: "12px",
-                    }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-
-            {/* Scope breakdown */}
-            <div style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "6px",
-              marginBottom: "16px",
-            }}>
-              {[
-                { label: "Scope 1: Operations",           value: result.scope1 },
-                { label: "Scope 2: Purchased Energy",    value: result.scope2 },
-                { label: "Scope 3: Value Chain",         value: result.scope3 },
-              ].map((entry, index) => (
-                <div key={entry.label} style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    <div style={{
-                      width: "8px",
-                      height: "8px",
-                      borderRadius: "50%",
-                      background: SCOPE_COLORS[index],
-                      flexShrink: 0,
-                    }} />
-                    <span style={{
-                      fontSize: "11px",
-                      color: COLORS.black,
-                      opacity: 0.6,
-                      fontFamily: "var(--font-unbounded)",
-                    }}>
-                      {entry.label}
-                    </span>
-                  </div>
-                  <span style={{
-                    fontFamily: "var(--font-geist-mono)",
-                    fontSize: "12px",
-                    fontWeight: 500,
-                    color: COLORS.text,
-                  }}>
-                    {entry.value.toLocaleString()} tCO₂e
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            {/* Disclaimer */}
-<div style={disclaimerStyle}>
-  <p style={disclaimerTitleStyle}>Indicative Estimate</p>
-  <p style={disclaimerBodyStyle}>
-    Uses sector-average EEIO emission intensities as a proxy.
-    Your organisation's actual emissions may differ significantly.
-  </p>
-  <p style={{ ...disclaimerBodyStyle, marginBottom: 0 }}>
-    <strong>Source:</strong>{" "}
-    {benchmark.source ?? "Exiobase 3.8, own calculations"} · 
-    GWP: IPCC AR6 · {REPORTING_YEAR}
-  </p>
-  <p style={{ ...disclaimerBodyStyle, marginBottom: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
-    <strong>Data Quality Score:</strong> 3
-    <span
-      style={{ position: 'relative', display: 'inline-flex' }}
-      onMouseEnter={() => setShowDQ(true)}
-      onMouseLeave={() => setShowDQ(false)}
-    >
-      <span style={{
-        width: '14px',
-        height: '14px',
-        borderRadius: '50%',
-        border: '1px solid currentColor',
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontSize: '10px',
-        cursor: 'help',
-        opacity: 0.6,
-      }}>i</span>
-      {showDQ && (
-        <span style={{
-          position: 'absolute',
-          bottom: '120%',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          background: '#1a1a1a',
-          color: '#fff',
-          borderRadius: '6px',
-          padding: '8px 10px',
-          fontSize: '11px',
-          lineHeight: '1.5',
-          whiteSpace: 'nowrap',
-          pointerEvents: 'none',
-          zIndex: 10,
-        }}>
-          <strong>1 — High:</strong> Directly measured and verified<br/>
-          <strong>2 — Medium:</strong> Based on activity data combined with industry averages<br/>
-          <strong>3 — Low:</strong> Derived from broad averages or proxies 
-        </span>
+        </div>
       )}
-    </span>
-  </p>
-</div>
-</>
-        )}
-      </div>
-    )}
-  </div>
-);
-} 
+    </div>
+  );
+}
